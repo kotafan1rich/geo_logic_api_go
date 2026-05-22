@@ -1,0 +1,30 @@
+version: '3'
+
+vars:
+  APP_NAME: geo_logic_api
+
+tasks:
+  db:up:
+    desc: "Start PostGIS container"
+    cmds:
+      - docker compose up -d
+
+  db:down:
+    desc: "Stop PostGIS container"
+    cmds:
+      - docker compose down
+
+  logs:
+  desc: "View containers logs"
+  cmds:
+    - docker compose logs -f
+
+  run:
+    desc: "Run the Go application"
+    cmds:
+      - go run cmd/server/main.go
+
+  build:
+    desc: "Build the Go binary"
+    cmds:
+      - go build -o bin/{{.APP_NAME}} cmd/server/main.go
