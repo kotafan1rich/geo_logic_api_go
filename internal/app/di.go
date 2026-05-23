@@ -4,12 +4,15 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/kotafan1rich/geo_logic_api_go/internal/api"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 )
 
 type diContainer struct {
 	db database.DB
+
+	handler api.Handler
 }
 
 func newDIContainer() *diContainer {
@@ -29,4 +32,12 @@ func (d *diContainer) DB() database.DB {
 		d.db = db
 	}
 	return d.db
+}
+
+func (d *diContainer) Handler() api.Handler {
+	if d.handler == nil {
+		d.handler = api.NewHandler()
+	}
+
+	return d.handler
 }
