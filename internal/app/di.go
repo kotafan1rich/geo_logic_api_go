@@ -7,10 +7,16 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/api"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
 type diContainer struct {
 	db database.DB
+
+	userRepo service.UserRepository
+
+	userService service.UserService
 
 	handler api.Handler
 }
@@ -32,6 +38,22 @@ func (d *diContainer) DB() database.DB {
 		d.db = db
 	}
 	return d.db
+}
+
+func (d *diContainer) UserRepo() service.UserRepository {
+	if d.userRepo == nil {
+		d.userRepo = repository.NewRepository(d.DB())
+	}
+
+	return d.userRepo
+}
+
+func (d *diContainer) UserService() service.UserService {
+	if d.userService == nil {
+		d.userService = service.NewUserService(d.UserRepo())
+	}
+
+	return d.userService
 }
 
 func (d *diContainer) Handler() api.Handler {
