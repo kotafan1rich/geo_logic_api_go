@@ -1,10 +1,15 @@
 package app
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
@@ -40,6 +45,35 @@ func (a *App) migrateDB() {
 	}
 }
 
+func (a *App) closeDB() error {
+	sqlDB, err := a.diContainer.DB().GORM().DB()
+	if err != nil {
+		slog.Error("failed to close database connection cleanly", "err", err)
+		return err
+	}
+
+	sqlDB.Close()
+	slog.Info("db is closed")
+	return nil
+}
+
+func (a *App) gracefullShutdown() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := a.httpServer.Shutdown(ctx); err != nil {
+		slog.Error("HTTP server graceful shutdown failed", "err", err)
+		return fmt.Errorf("server shutdown failed: %w", err)
+	}
+
+	err := a.closeDB()
+	if err != nil {
+		slog.Error("failed to close sql.DB", "err", err)
+		return err
+	}
+	return nil
+}
+
 func (a *App) initDeps() {
 	inits := []func(){
 		a.initHTTPServer,
@@ -54,5 +88,24 @@ func (a *App) initDeps() {
 func (a *App) Run() error {
 	slog.Info("server is running")
 
-	return a.httpServer.ListenAndServe()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		slog.Info("http server is running")
+		err := a.httpServer.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("HTTP server failed to listen", "err", err)
+			os.Exit(1)
+		}
+	}()
+
+	sig := <-quit
+	slog.Info("shutdown signal received, starting graceful shutdown...", "signal", sig.String())
+	err := a.gracefullShutdown()
+	if err != nil {
+		return err
+	}
+	slog.Info("server stopped cleanly")
+	return nil
 }
