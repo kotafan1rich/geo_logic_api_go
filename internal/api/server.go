@@ -1,25 +1,34 @@
 package api
 
-import "github.com/gin-gonic/gin"
-
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user"
+)
 
 type Handler interface {
 	Routes() *gin.Engine
 }
 
-type handler struct {
+type mainHandler struct {
+	userHandler user.Handler
 }
 
-func NewHandler() Handler {
-	return &handler{}
+func NewMainHandler(userHandler user.Handler) Handler {
+	return &mainHandler{userHandler: userHandler}
 }
 
-func (h *handler) Routes() *gin.Engine {
-	router := gin.New()
+func (h *mainHandler) Routes() *gin.Engine {
+    router := gin.New()
 
-	router.Use(
-		gin.Recovery(),
-	)
+    router.Use(
+        gin.Recovery(),
+    )
 
-	return router
+    api := router.Group("/api")
+    {
+        handler.RegisterRoutes(api, h.userHandler)
+    }
+
+    return router
 }

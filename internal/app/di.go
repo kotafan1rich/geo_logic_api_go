@@ -7,14 +7,18 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/api"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
+	userservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/user"
+	userrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user"
+
 )
 
 type diContainer struct {
 	db database.DB
 
-	userRepo service.UserRepository
+	userRepo repository.UserRepository
 
 	userService service.UserService
 
@@ -40,9 +44,9 @@ func (d *diContainer) DB() database.DB {
 	return d.db
 }
 
-func (d *diContainer) UserRepo() service.UserRepository {
+func (d *diContainer) UserRepo() repository.UserRepository {
 	if d.userRepo == nil {
-		d.userRepo = repository.NewRepository(d.DB())
+		d.userRepo = userrepo.NewRepository(d.DB())
 	}
 
 	return d.userRepo
@@ -50,7 +54,7 @@ func (d *diContainer) UserRepo() service.UserRepository {
 
 func (d *diContainer) UserService() service.UserService {
 	if d.userService == nil {
-		d.userService = service.NewUserService(d.UserRepo())
+		d.userService = userservice.NewUserService(d.UserRepo())
 	}
 
 	return d.userService
@@ -58,7 +62,8 @@ func (d *diContainer) UserService() service.UserService {
 
 func (d *diContainer) Handler() api.Handler {
 	if d.handler == nil {
-		d.handler = api.NewHandler()
+		userHandler := user.NewHandler(d.UserService())
+		d.handler = api.NewMainHandler(userHandler)
 	}
 
 	return d.handler

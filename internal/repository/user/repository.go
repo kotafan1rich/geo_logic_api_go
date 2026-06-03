@@ -5,18 +5,18 @@ import (
 
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
 )
 
-type repository struct {
+type userRepository struct {
 	db database.DB
 }
 
-func NewRepository(db database.DB) service.UserRepository {
-	return &repository{db: db}
+func NewRepository(db database.DB) repository.UserRepository {
+	return &userRepository{db: db}
 }
 
-func (r *repository) Create(ctx context.Context, user *model.User) (*model.User, error) {
+func (r *userRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	err := r.db.GORM().WithContext(ctx).Create(user).Error
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func (r *repository) Create(ctx context.Context, user *model.User) (*model.User,
 	return user, nil
 }
 
-func (r *repository) GetById(ctx context.Context, id uint64) (*model.User, error) {
+func (r *userRepository) GetById(ctx context.Context, id uint64) (*model.User, error) {
 	var user model.User
 	err := r.db.GORM().WithContext(ctx).First(&user, id).Error
 	if err != nil {
@@ -35,7 +35,7 @@ func (r *repository) GetById(ctx context.Context, id uint64) (*model.User, error
 	return &user, nil
 }
 
-func (r *repository) Update(ctx context.Context, user *model.User) (*model.User, error) {
+func (r *userRepository) Update(ctx context.Context, user *model.User) (*model.User, error) {
 	err := r.db.GORM().WithContext(ctx).Save(user).Error
 	if err != nil {
 		return nil, err
@@ -44,6 +44,6 @@ func (r *repository) Update(ctx context.Context, user *model.User) (*model.User,
 	return user, err
 }
 
-func (r *repository) Delete(ctx context.Context, id uint64) error {
+func (r *userRepository) Delete(ctx context.Context, id uint64) error {
 	return r.db.GORM().WithContext(ctx).Delete(&model.User{}, id).Error
 }
