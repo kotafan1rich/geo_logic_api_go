@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
+	"gorm.io/gorm"
 )
 
 type userRepository struct {
@@ -29,6 +31,9 @@ func (r *userRepository) GetById(ctx context.Context, id uint64) (*model.User, e
 	var user model.User
 	err := r.db.GORM().WithContext(ctx).First(&user, id).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 

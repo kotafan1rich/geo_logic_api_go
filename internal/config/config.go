@@ -6,15 +6,16 @@ import (
 
 	"github.com/caarlos0/env/v9"
 	"github.com/joho/godotenv"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 )
 
 type Database struct {
-	Host       string `env:"DB_HOST" envDefault:"localhost"`
-	Port       string `env:"DB_PORT" envDefault:"5432"`
-	User       string `env:"DB_USER" envDefault:"postgres"`
-	Password   string `env:"DB_PASSWORD" envDefault:"postgres"`
-	Name       string `env:"DB_NAME" envDefault:"postgres"`
-	SSLMode    string `env:"DB_SSL_MODE" envDefault:"disable"`
+	Host         string `env:"DB_HOST" envDefault:"localhost"`
+	Port         string `env:"DB_PORT" envDefault:"5432"`
+	User         string `env:"DB_USER" envDefault:"postgres"`
+	Password     string `env:"DB_PASSWORD" envDefault:"postgres"`
+	Name         string `env:"DB_NAME" envDefault:"postgres"`
+	SSLMode      string `env:"DB_SSL_MODE" envDefault:"disable"`
 	MaxIdleConns int    `env:"MAX_IDLE_CONNS" envDefault:"10"`
 	MaxOpenConns int    `env:"MAX_OPEN_CONNS" envDefault:"100"`
 }
@@ -29,15 +30,15 @@ type HttpServer struct {
 }
 
 type Logging struct {
-	LogLevel     string `env:"LOG_LEVEL" envDefault:"info"`
-	LogFormat    string `env:"LOG_FORMAT" envDefault:"text"` // json or text
-	LogAddSource bool   `env:"LOG_ADD_SOURCE" envDefault:"false"`
+	LogLevel     logger.LogLevel  `env:"LOG_LEVEL" envDefault:"info"`
+	LogFormat    logger.LogFormat `env:"LOG_FORMAT" envDefault:"text"` // json or text
+	LogAddSource bool             `env:"LOG_ADD_SOURCE" envDefault:"false"`
 }
 
 type Config struct {
-	Database Database
+	Database   Database
 	HttpServer HttpServer
-	Logging Logging
+	Logging    Logging
 }
 
 var config *Config
@@ -60,7 +61,7 @@ func Get() *Config {
 	if config == nil {
 		panic("config is not initialized! call config.MustLoad() first")
 	}
-	return  config
+	return config
 }
 
 func (d *Database) DSN() string {

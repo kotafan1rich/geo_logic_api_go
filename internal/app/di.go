@@ -8,11 +8,11 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
+	userrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 	userservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/user"
-	userrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user"
-
 )
 
 type diContainer struct {
@@ -23,6 +23,8 @@ type diContainer struct {
 	userService service.UserService
 
 	handler api.Handler
+
+	log logger.Logger
 }
 
 func newDIContainer() *diContainer {
@@ -63,8 +65,20 @@ func (d *diContainer) UserService() service.UserService {
 func (d *diContainer) Handler() api.Handler {
 	if d.handler == nil {
 		userHandler := user.NewHandler(d.UserService())
-		d.handler = api.NewMainHandler(userHandler)
+		d.handler = api.NewMainHandler(d.Logger(), userHandler)
 	}
 
 	return d.handler
+}
+
+func (d *diContainer) Logger() logger.Logger {
+	if d.log == nil {
+		cfg := config.Get()
+		d.log = logger.New(cfg.Logging.LogLevel,
+			cfg.Logging.LogFormat,
+			cfg.Logging.LogAddSource,
+			os.Stdout,
+		)
+	}
+	return d.log
 }
