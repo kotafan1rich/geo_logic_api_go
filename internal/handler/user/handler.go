@@ -7,24 +7,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
 )
 
-type Handler interface {
-	Create(c *gin.Context)
-	GetById(c *gin.Context)
-	Update(c *gin.Context)
-	Delete(c *gin.Context)
-}
-
-type handler struct {
+type userHandler struct {
 	service service.UserService
 }
 
-func NewHandler(service service.UserService) Handler {
-	return &handler{service: service}
+func NewHandler(service service.UserService) handler.UserHandler {
+	return &userHandler{service: service}
 }
 
-func (h *handler) Create(c *gin.Context) {
+func (h *userHandler) Create(c *gin.Context) {
 	var req dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "field tg_id is required and must be an integer"})
@@ -40,7 +34,7 @@ func (h *handler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToUserResponse(user))
 }
 
-func (h *handler) GetById(c *gin.Context) {
+func (h *userHandler) GetById(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "field id is required and must be an integer"})
@@ -55,7 +49,7 @@ func (h *handler) GetById(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToUserResponse(user))
 }
 
-func (h *handler) Update(c *gin.Context) {
+func (h *userHandler) Update(c *gin.Context) {
 	var req dto.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
@@ -70,7 +64,7 @@ func (h *handler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToUserResponse(user))
 }
 
-func (h *handler) Delete(c *gin.Context) {
+func (h *userHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "field id is required and must be an integer"})
