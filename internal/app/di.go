@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log/slog"
 	"os"
 
 	"github.com/kotafan1rich/geo_logic_api_go/internal/api"
@@ -38,7 +37,7 @@ func (d *diContainer) DB() database.DB {
 		db, err := database.New(cfg.Database.DSN(), cfg.Database.MaxIdleConns, cfg.Database.MaxOpenConns)
 
 		if err != nil {
-			slog.Error("failed to connect to db", "err", err)
+			d.Logger().Error("failed to connect to db", "err", err)
 			os.Exit(1)
 		}
 		d.db = db
@@ -56,7 +55,7 @@ func (d *diContainer) UserRepo() repository.UserRepository {
 
 func (d *diContainer) UserService() service.UserService {
 	if d.userService == nil {
-		d.userService = userservice.NewUserService(d.UserRepo())
+		d.userService = userservice.NewUserService(d.Logger(), d.UserRepo())
 	}
 
 	return d.userService

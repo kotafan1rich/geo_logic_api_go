@@ -1,4 +1,4 @@
-package repository
+package user
 
 import (
 	"context"
@@ -21,6 +21,9 @@ func NewRepository(db database.DB) repository.UserRepository {
 func (r *userRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	err := r.db.GORM().WithContext(ctx).Create(user).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrUserAlreadyExists
+		}
 		return nil, err
 	}
 
@@ -32,7 +35,7 @@ func (r *userRepository) GetById(ctx context.Context, id uint64) (*model.User, e
 	err := r.db.GORM().WithContext(ctx).First(&user, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -43,6 +46,9 @@ func (r *userRepository) GetById(ctx context.Context, id uint64) (*model.User, e
 func (r *userRepository) Update(ctx context.Context, user *model.User) (*model.User, error) {
 	err := r.db.GORM().WithContext(ctx).Save(user).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
 
@@ -50,5 +56,12 @@ func (r *userRepository) Update(ctx context.Context, user *model.User) (*model.U
 }
 
 func (r *userRepository) Delete(ctx context.Context, id uint64) error {
-	return r.db.GORM().WithContext(ctx).Delete(&model.User{}, id).Error
+	err := r.db.GORM().WithContext(ctx).Delete(&model.User{}, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrUserNotFound
+		}
+		return err
+	}
+	return nil
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/middleware"
 )
 
 type Logger interface {
@@ -27,6 +28,7 @@ func (h *mainHandler) Routes() *gin.Engine {
 
 	router.Use(
 		h.log.GinLoggerMiddleware(),
+		middleware.ErrorHandlerMiddleware(),
 		gin.Recovery(),
 	)
 
