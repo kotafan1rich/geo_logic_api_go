@@ -23,12 +23,12 @@ func (h *userHandler) Create(c *gin.Context) {
 	var req dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(errors.ValidationError("tg_id", "must be greater then 0"))
-
 		return
 	}
 
 	user, err := h.service.Create(c.Request.Context(), req.TgId)
 	if err != nil {
+		c.Error(err)
 		return
 	}
 

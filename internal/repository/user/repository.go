@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
@@ -21,7 +22,8 @@ func NewRepository(db database.DB) repository.UserRepository {
 func (r *userRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	err := r.db.GORM().WithContext(ctx).Create(user).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {
 			return nil, ErrUserAlreadyExists
 		}
 		return nil, err
@@ -44,24 +46,29 @@ func (r *userRepository) GetById(ctx context.Context, id uint64) (*model.User, e
 }
 
 func (r *userRepository) Update(ctx context.Context, user *model.User) (*model.User, error) {
-	err := r.db.GORM().WithContext(ctx).Save(user).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrUserNotFound
+	result := r.db.GORM().WithContext(ctx).Model(user).Updates(user)
+	if result.Error != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {
+			return nil, ErrUserAlreadyExists
 		}
-		return nil, err
+		return nil, result.Error
 	}
 
-	return user, err
+	if result.RowsAffected == 0 {
+		return nil, ErrUserNotFound
+	}
+	return user, nil
 }
 
 func (r *userRepository) Delete(ctx context.Context, id uint64) error {
-	err := r.db.GORM().WithContext(ctx).Delete(&model.User{}, id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrUserNotFound
-		}
-		return err
+	result := r.db.GORM().WithContext(ctx).Delete(&model.User{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrUserNotFound
 	}
 	return nil
 }

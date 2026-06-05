@@ -27,9 +27,9 @@ func (h *mainHandler) Routes() *gin.Engine {
 	router := gin.New()
 
 	router.Use(
+		gin.Recovery(),
 		h.log.GinLoggerMiddleware(),
 		middleware.ErrorHandlerMiddleware(),
-		gin.Recovery(),
 	)
 
 	api := router.Group("/api")
