@@ -18,6 +18,7 @@ var (
 	ErrInternal     = &AppError{Status: http.StatusInternalServerError, Code: "INTERNAL_ERROR", Message: "Internal server error"}
 	ErrUnauthorized = &AppError{Status: http.StatusUnauthorized, Code: "UNAUTHORIZED", Message: "Unauthorized"}
 	ErrForbidden    = &AppError{Status: http.StatusForbidden, Code: "FORBIDDEN", Message: "Forbidden"}
+	ErrConflict     = &AppError{Status: http.StatusConflict, Code: "CONFLICT", Message: "Conflict"}
 )
 
 func New(status int, code, message, details string) *AppError {

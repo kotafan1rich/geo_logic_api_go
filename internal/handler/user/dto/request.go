@@ -1,10 +1,10 @@
 package dto
 
 type CreateUserRequest struct {
-	TgId uint64 `json:"tg_id"`
+	TgId uint64 `json:"tg_id" binding:"required"`
 }
 
 type UpdateUserRequest struct {
-	Id   uint64 `json:"id"`
-	TgId uint64 `json:"tg_id"`
+	Id   uint64 `json:"id" binding:"required"`
+	TgId uint64 `json:"tg_id" binding:"required"`
 }

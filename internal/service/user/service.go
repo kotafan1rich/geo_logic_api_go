@@ -30,7 +30,7 @@ func (s *userService) Create(ctx context.Context, tgId uint64) (*model.User, err
 	newUser, err := s.repo.Create(ctx, newUser)
 	if err != nil {
 		if errors.Is(err, user.ErrUserAlreadyExists) {
-			return nil, apperrors.Wrap(err, apperrors.ErrBadRequest)
+			return nil, apperrors.Wrap(err, apperrors.ErrConflict)
 		}
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (s *userService) Update(ctx context.Context, id uint64, newTgId uint64) (*m
 		oldUser, err = s.repo.Update(ctx, oldUser)
 		if err != nil {
 			if errors.Is(err, user.ErrUserAlreadyExists) {
-				return nil, apperrors.Wrap(err, apperrors.ErrBadRequest)
+				return nil, apperrors.Wrap(err, apperrors.ErrConflict)
 			}
 			return nil, err
 		}
