@@ -21,12 +21,12 @@ func NewHandler(service service.UserService) handler.UserHandler {
 
 func (h *userHandler) Create(c *gin.Context) {
 	var req dto.CreateUserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil || req.TgID == 0 {
 		c.Error(errors.ValidationError("tg_id", "must be greater then 0"))
 		return
 	}
 
-	user, err := h.service.Create(c.Request.Context(), req.TgId)
+	user, err := h.service.Create(c.Request.Context(), req.TgID)
 	if err != nil {
 		c.Error(err)
 		return
@@ -37,7 +37,7 @@ func (h *userHandler) Create(c *gin.Context) {
 
 func (h *userHandler) GetById(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
+	if err != nil || id == 0 {
 		c.Error(errors.ValidationError("tg_id", "must be greater then 0"))
 		return
 	}
@@ -52,12 +52,12 @@ func (h *userHandler) GetById(c *gin.Context) {
 
 func (h *userHandler) Update(c *gin.Context) {
 	var req dto.UpdateUserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil || req.ID == 0 || req.TgID == 0 {
 		c.Error(err).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	user, err := h.service.Update(c.Request.Context(), req.Id, req.TgId)
+	user, err := h.service.Update(c.Request.Context(), req.ID, req.TgID)
 	if err != nil {
 		c.Error(err)
 		return
@@ -67,7 +67,7 @@ func (h *userHandler) Update(c *gin.Context) {
 
 func (h *userHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
+	if err != nil || id == 0 {
 		c.Error(errors.ValidationError("tg_id", "must be greater then 0"))
 		return
 	}
