@@ -25,7 +25,7 @@ func NewUserService(log Logger, repo repository.UserRepository) service.UserServ
 }
 
 func (s *userService) Create(ctx context.Context, tgId uint64) (*model.User, error) {
-	newUser := &model.User{TgId: tgId}
+	newUser := &model.User{TgID: tgId}
 
 	newUser, err := s.repo.Create(ctx, newUser)
 	if err != nil {
@@ -57,8 +57,8 @@ func (s *userService) Update(ctx context.Context, id uint64, newTgId uint64) (*m
 		}
 		return nil, err
 	}
-	if oldUser.TgId != newTgId {
-		oldUser.TgId = newTgId
+	if oldUser.TgID != newTgId {
+		oldUser.TgID = newTgId
 		oldUser, err = s.repo.Update(ctx, oldUser)
 		if err != nil {
 			if errors.Is(err, user.ErrUserAlreadyExists) {

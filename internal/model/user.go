@@ -1,7 +1,10 @@
 package model
 
+import "time"
 
 type User struct {
-	Base
-	TgId uint64 `gorm:"column:tg_id;type:bigint;unique;not null"`
+	ID        uint64
+	TgID      uint64
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

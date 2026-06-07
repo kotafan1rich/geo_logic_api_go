@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/user/dbmodel"
 )
 
 type App struct {
@@ -39,7 +39,7 @@ func (a *App) initHTTPServer() {
 }
 
 func (a *App) migrateDB() {
-	if err := a.diContainer.DB().GORM().AutoMigrate(&model.User{}); err != nil {
+	if err := a.diContainer.DB().GORM().AutoMigrate(&dbmodel.User{}); err != nil {
 		slog.Error("Failed to run migrations")
 		os.Exit(1)
 	}
