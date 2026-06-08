@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 
@@ -22,6 +23,14 @@ func httpAddUser(tgId uint64) (*http.Response, error) {
 	return httpClient.Post(testServerURL+"/api/user/create", "application/json", bytes.NewBuffer(jsonBytes))
 }
 
+func parseBody(body io.ReadCloser, dest any) error {
+	err := json.NewDecoder(body).Decode(dest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func addUser(tgId uint64) (*dto.UserResponse, error) {
 	resp, err := httpAddUser(tgId)
 	if err != nil {
@@ -30,8 +39,7 @@ func addUser(tgId uint64) (*dto.UserResponse, error) {
 	defer resp.Body.Close()
 
 	var createUserResponse dto.UserResponse
-
-	err = json.NewDecoder(resp.Body).Decode(&createUserResponse)
+	err = parseBody(resp.Body, &createUserResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +113,24 @@ func TestE2E_UserAdd_Validation(t *testing.T) {
 	}
 }
 
-func getByID(id int64) (*http.Response, error) {
+func httpGetByID(id int64) (*http.Response, error) {
 	return httpClient.Get(fmt.Sprintf("%s/api/user/get_by_id/%d", testServerURL, id))
+}
+
+func getByID(id int64) (*dto.UserResponse, error) {
+	resp, err := httpGetByID(id)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var user dto.UserResponse
+	err = parseBody(resp.Body, &user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func TestE2E_UserGetByID(t *testing.T) {
@@ -115,7 +139,7 @@ func TestE2E_UserGetByID(t *testing.T) {
 	createdUser, err := addUser(tgId)
 	require.NoError(t, err)
 
-	resp, err := getByID(int64(createdUser.ID))
+	resp, err := httpGetByID(int64(createdUser.ID))
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -125,7 +149,7 @@ func TestE2E_UserGetByID(t *testing.T) {
 
 func TestE2E_UserGetByID_NotFound(t *testing.T) {
 	clearTables(t)
-	resp, err := getByID(1)
+	resp, err := httpGetByID(1)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -160,4 +184,143 @@ func TestE2E_UserGetByID_Validation(t *testing.T) {
 			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 		})
 	}
+}
+
+func httpUpdateUser(updateUser *dto.UpdateUserRequest) (*http.Response, error) {
+	jsonBytes, _ := json.Marshal(updateUser)
+
+	request, err := http.NewRequest(
+		http.MethodPut,
+		testServerURL+"/api/user/update",
+		bytes.NewBuffer(jsonBytes),
+	)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	return httpClient.Do(request)
+}
+
+func updateUser(id uint64, tgID uint64) (*dto.UserResponse, error) {
+	updateUser := &dto.UpdateUserRequest{
+		ID:   id,
+		TgID: tgID,
+	}
+
+	resp, err := httpUpdateUser(updateUser)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	var updateUserResponse dto.UserResponse
+	err = parseBody(resp.Body, &updateUserResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return &updateUserResponse, nil
+}
+
+func TestE2E_UserUpdate(t *testing.T) {
+	clearTables(t)
+	oldTgID := 1
+	newTgID := 2
+
+	newUser, err := addUser(uint64(oldTgID))
+	require.NoError(t, err)
+
+	resp, err := httpUpdateUser(&dto.UpdateUserRequest{ID: newUser.ID, TgID: uint64(newTgID)})
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var updatedUser dto.UserResponse
+	err = parseBody(resp.Body, &updatedUser)
+	require.NoError(t, err)
+
+	factUser, err := getByID(int64(newUser.ID))
+	require.NoError(t, err)
+
+	assert.Equal(t, newTgID, int(updatedUser.TgID))
+	assert.Equal(t, factUser.TgID, updatedUser.TgID)
+}
+
+func TestE2E_UserUpdate_Conflict(t *testing.T) {
+	clearTables(t)
+	TgID1 := 1
+	TgID2 := 2
+
+	_, err := addUser(uint64(TgID1))
+	require.NoError(t, err)
+
+	newUser2, err := addUser(uint64(TgID2))
+	require.NoError(t, err)
+
+	resp, err := httpUpdateUser(&dto.UpdateUserRequest{ID: newUser2.ID, TgID: uint64(TgID1)})
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusConflict, resp.StatusCode)
+}
+
+func TestE2E_UserUpdate_Validation(t *testing.T) {
+	clearTables(t)
+	type testCase struct {
+		name string
+		json string
+	}
+
+	tests := []testCase{
+		{
+			"Отрицательный tgID",
+			`{"id": 1, "tg_id": -1}`,
+		},
+		{
+			"tgID не число",
+			`{"id": 1, "tg_id": "lol"}`,
+		},
+		{
+			"Отрицательный ID",
+			`{"id": -1, "tg_id": 1}`,
+		},
+		{
+			"ID не число",
+			`{"id": "lol", "tg_id": 1}`,
+		},
+		{
+			"нет ID",
+			`{"tg_id": 1}`,
+		},
+		{
+			"нет TgID",
+			`{"id": 1}`,
+		},
+		{
+			"пустой",
+			"{}",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			jsonBytes, _ := json.Marshal(dto.UpdateUserRequest{})
+
+			request, err := http.NewRequest(
+				http.MethodPut,
+				testServerURL+"/api/user/update",
+				bytes.NewBuffer(jsonBytes),
+			)
+			require.NoError(t, err)
+			request.Header.Set("Content-Type", "application/json")
+			resp, err := httpClient.Do(request)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	}
+
 }

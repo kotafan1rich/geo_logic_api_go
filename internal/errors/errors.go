@@ -41,11 +41,11 @@ func Wrap(err error, appErr *AppError) *AppError {
 	}
 }
 
-func ValidationError(field, message string) *AppError {
+func ValidationError(details string) *AppError {
 	return &AppError{
 		Status:  http.StatusBadRequest,
 		Code:    "VALIDATION_ERROR",
 		Message: "Validation failed",
-		Details: fmt.Sprintf("%s: %s", field, message),
+		Details: details,
 	}
 }
