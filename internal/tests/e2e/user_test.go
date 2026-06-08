@@ -287,12 +287,10 @@ func TestE2E_UserUpdate_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			jsonBytes, _ := json.Marshal(dto.UpdateUserRequest{})
-
 			request, err := http.NewRequest(
 				http.MethodPut,
 				testServerURL+"/api/user/update",
-				bytes.NewBuffer(jsonBytes),
+				bytes.NewBufferString(tc.json),
 			)
 			require.NoError(t, err)
 			request.Header.Set("Content-Type", "application/json")

@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/user/dbmodel"
 )
@@ -29,6 +30,7 @@ func New() *App {
 }
 
 func (a *App) initHTTPServer() {
+	gin.SetMode(config.Get().HttpServer.GinMode)
 	a.httpServer = &http.Server{
 		Addr:         fmt.Sprintf(":%s", config.Get().HttpServer.ServerPort),
 		Handler:      a.diContainer.Handler().Routes(),

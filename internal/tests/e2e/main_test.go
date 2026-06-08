@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/app"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/testcontainers/testcontainers-go"
