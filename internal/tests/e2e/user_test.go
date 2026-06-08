@@ -368,17 +368,19 @@ func TestE2E_UserDelete_Validation(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		request, err := http.NewRequest(
-			http.MethodDelete,
-			fmt.Sprintf("%s/api/user/delete/%s", testServerURL, tc.id),
-			nil,
-		)
-		require.NoError(t, err)
+		t.Run(tc.name, func(t *testing.T) {
+			request, err := http.NewRequest(
+				http.MethodDelete,
+				fmt.Sprintf("%s/api/user/delete/%s", testServerURL, tc.id),
+				nil,
+			)
+			require.NoError(t, err)
 
-		resp, err := httpClient.Do(request)
-		require.NoError(t, err)
-		defer resp.Body.Close()
+			resp, err := httpClient.Do(request)
+			require.NoError(t, err)
+			defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
 	}
 }
