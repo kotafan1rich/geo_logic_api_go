@@ -250,16 +250,16 @@ func TestE2E_UserUpdate(t *testing.T) {
 
 func TestE2E_UserUpdate_Conflict(t *testing.T) {
 	clearTables(t)
-	TgID1 := 1
-	TgID2 := 2
+	tgID1 := 1
+	tgID2 := 2
 
-	_, err := addUser(uint64(TgID1))
+	_, err := addUser(uint64(tgID1))
 	require.NoError(t, err)
 
-	newUser2, err := addUser(uint64(TgID2))
+	newUser2, err := addUser(uint64(tgID2))
 	require.NoError(t, err)
 
-	resp, err := httpUpdateUser(&dto.UpdateUserRequest{ID: newUser2.ID, TgID: uint64(TgID1)})
+	resp, err := httpUpdateUser(&dto.UpdateUserRequest{ID: newUser2.ID, TgID: uint64(tgID1)})
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -323,4 +323,81 @@ func TestE2E_UserUpdate_Validation(t *testing.T) {
 		})
 	}
 
+}
+
+func httpDeleteUser(id int64) (*http.Response, error) {
+	request, err := http.NewRequest(
+		http.MethodDelete,
+		fmt.Sprintf("%s/api/user/delete/%d", testServerURL, id),
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return httpClient.Do(request)
+}
+
+func TestE2E_UserDelete(t *testing.T) {
+	clearTables(t)
+
+	tgID := 1
+	user, err := addUser(uint64(tgID))
+	require.NoError(t, err)
+
+	resp1, err := httpDeleteUser(int64(user.ID))
+	require.NoError(t, err)
+	defer resp1.Body.Close()
+
+	require.Equal(t, http.StatusNoContent, resp1.StatusCode)
+
+	resp2, err := httpGetByID(int64(user.ID))
+	require.NoError(t, err)
+	defer resp2.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp2.StatusCode)
+}
+
+func TestE2E_UserDelete_NotFound(t *testing.T) {
+	clearTables(t)
+
+	resp, err := httpDeleteUser(1)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestE2E_UserDelete_Validation(t *testing.T) {
+	clearTables(t)
+
+	type testCase struct {
+		name string
+		id   string
+	}
+
+	tests := []testCase{
+		{
+			name: "Передача отрицательного",
+			id:   "-1",
+		},
+		{
+			name: "Передача строки вместо числа",
+			id:   "lol",
+		},
+	}
+
+	for _, tc := range tests {
+		request, err := http.NewRequest(
+			http.MethodDelete,
+			fmt.Sprintf("%s/api/user/delete/%s", testServerURL, tc.id),
+			nil,
+		)
+		require.NoError(t, err)
+
+		resp, err := httpClient.Do(request)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	}
 }
