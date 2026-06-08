@@ -113,12 +113,12 @@ func TestE2E_UserAdd_Validation(t *testing.T) {
 	}
 }
 
-func httpGetByID(id int64) (*http.Response, error) {
+func httpGetUserByID(id int64) (*http.Response, error) {
 	return httpClient.Get(fmt.Sprintf("%s/api/user/get_by_id/%d", testServerURL, id))
 }
 
-func getByID(id int64) (*dto.UserResponse, error) {
-	resp, err := httpGetByID(id)
+func getUserByID(id int64) (*dto.UserResponse, error) {
+	resp, err := httpGetUserByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func TestE2E_UserGetByID(t *testing.T) {
 	createdUser, err := addUser(tgId)
 	require.NoError(t, err)
 
-	resp, err := httpGetByID(int64(createdUser.ID))
+	resp, err := httpGetUserByID(int64(createdUser.ID))
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -149,7 +149,7 @@ func TestE2E_UserGetByID(t *testing.T) {
 
 func TestE2E_UserGetByID_NotFound(t *testing.T) {
 	clearTables(t)
-	resp, err := httpGetByID(1)
+	resp, err := httpGetUserByID(1)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -201,30 +201,9 @@ func httpUpdateUser(updateUser *dto.UpdateUserRequest) (*http.Response, error) {
 	return httpClient.Do(request)
 }
 
-func updateUser(id uint64, tgID uint64) (*dto.UserResponse, error) {
-	updateUser := &dto.UpdateUserRequest{
-		ID:   id,
-		TgID: tgID,
-	}
-
-	resp, err := httpUpdateUser(updateUser)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	var updateUserResponse dto.UserResponse
-	err = parseBody(resp.Body, &updateUserResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &updateUserResponse, nil
-}
-
 func TestE2E_UserUpdate(t *testing.T) {
 	clearTables(t)
+
 	oldTgID := 1
 	newTgID := 2
 
@@ -241,7 +220,7 @@ func TestE2E_UserUpdate(t *testing.T) {
 	err = parseBody(resp.Body, &updatedUser)
 	require.NoError(t, err)
 
-	factUser, err := getByID(int64(newUser.ID))
+	factUser, err := getUserByID(int64(newUser.ID))
 	require.NoError(t, err)
 
 	assert.Equal(t, newTgID, int(updatedUser.TgID))
@@ -250,6 +229,7 @@ func TestE2E_UserUpdate(t *testing.T) {
 
 func TestE2E_UserUpdate_Conflict(t *testing.T) {
 	clearTables(t)
+
 	tgID1 := 1
 	tgID2 := 2
 
@@ -268,6 +248,7 @@ func TestE2E_UserUpdate_Conflict(t *testing.T) {
 
 func TestE2E_UserUpdate_Validation(t *testing.T) {
 	clearTables(t)
+
 	type testCase struct {
 		name string
 		json string
@@ -350,7 +331,7 @@ func TestE2E_UserDelete(t *testing.T) {
 
 	require.Equal(t, http.StatusNoContent, resp1.StatusCode)
 
-	resp2, err := httpGetByID(int64(user.ID))
+	resp2, err := httpGetUserByID(int64(user.ID))
 	require.NoError(t, err)
 	defer resp2.Body.Close()
 
