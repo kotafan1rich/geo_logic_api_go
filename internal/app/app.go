@@ -94,7 +94,7 @@ func (a *App) Run() error {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		slog.Info("http server is running")
+		slog.Info(fmt.Sprintf("http server is running on %s", a.httpServer.Addr))
 		err := a.httpServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("HTTP server failed to listen", "err", err)
