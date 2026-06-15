@@ -15,12 +15,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+
 func httpAddUser(tgId uint64) (*http.Response, error) {
 	payload := dto.CreateUserRequest{TgID: tgId}
 
 	jsonBytes, _ := json.Marshal(payload)
 
-	return httpClient.Post(testServerURL+"/api/user/create", "application/json", bytes.NewBuffer(jsonBytes))
+	return httpClient.Post(usersAPI(), "application/json", bytes.NewBuffer(jsonBytes))
 }
 
 func parseBody(body io.ReadCloser, dest any) error {
@@ -101,7 +102,7 @@ func TestE2E_UserAdd_Validation(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			resp, err := httpClient.Post(
-				testServerURL+"/api/user/create",
+				usersAPI(),
 				"application/json",
 				bytes.NewBufferString(tc.json),
 			)
@@ -114,7 +115,7 @@ func TestE2E_UserAdd_Validation(t *testing.T) {
 }
 
 func httpGetUserByID(id int64) (*http.Response, error) {
-	return httpClient.Get(fmt.Sprintf("%s/api/user/get_by_id/%d", testServerURL, id))
+	return httpClient.Get(fmt.Sprintf("%s/%d", usersAPI(), id))
 }
 
 func getUserByID(id int64) (*dto.UserResponse, error) {
@@ -177,7 +178,7 @@ func TestE2E_UserGetByID_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			resp, err := httpClient.Get(fmt.Sprintf("%s/api/user/get_by_id/%s", testServerURL, tc.tgId))
+			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", usersAPI(), tc.tgId))
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
@@ -186,12 +187,12 @@ func TestE2E_UserGetByID_Validation(t *testing.T) {
 	}
 }
 
-func httpUpdateUser(updateUser *dto.UpdateUserRequest) (*http.Response, error) {
+func httpUpdateUser(id int64, updateUser *dto.UpdateUserRequest) (*http.Response, error) {
 	jsonBytes, _ := json.Marshal(updateUser)
 
 	request, err := http.NewRequest(
-		http.MethodPut,
-		testServerURL+"/api/user/update",
+		http.MethodPatch,
+		fmt.Sprintf("%s/%d", usersAPI(), id),
 		bytes.NewBuffer(jsonBytes),
 	)
 	if err != nil {
@@ -210,7 +211,7 @@ func TestE2E_UserUpdate(t *testing.T) {
 	newUser, err := addUser(uint64(oldTgID))
 	require.NoError(t, err)
 
-	resp, err := httpUpdateUser(&dto.UpdateUserRequest{ID: newUser.ID, TgID: uint64(newTgID)})
+	resp, err := httpUpdateUser(int64(newUser.ID), &dto.UpdateUserRequest{TgID: uint64(newTgID)})
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -239,7 +240,7 @@ func TestE2E_UserUpdate_Conflict(t *testing.T) {
 	newUser2, err := addUser(uint64(tgID2))
 	require.NoError(t, err)
 
-	resp, err := httpUpdateUser(&dto.UpdateUserRequest{ID: newUser2.ID, TgID: uint64(tgID1)})
+	resp, err := httpUpdateUser(int64(newUser2.ID), &dto.UpdateUserRequest{TgID: uint64(tgID1)})
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -251,36 +252,39 @@ func TestE2E_UserUpdate_Validation(t *testing.T) {
 
 	type testCase struct {
 		name string
+		id   string
 		json string
 	}
 
 	tests := []testCase{
 		{
 			"Отрицательный tgID",
-			`{"id": 1, "tg_id": -1}`,
+			"1",
+			`{"tg_id": -1}`,
 		},
 		{
 			"tgID не число",
-			`{"id": 1, "tg_id": "lol"}`,
+			"1",
+			`{"tg_id": "lol"}`,
 		},
 		{
 			"Отрицательный ID",
-			`{"id": -1, "tg_id": 1}`,
+			"-1",
+			`{"tg_id": 1}`,
 		},
 		{
 			"ID не число",
-			`{"id": "lol", "tg_id": 1}`,
-		},
-		{
-			"нет ID",
+			"lol",
 			`{"tg_id": 1}`,
 		},
 		{
 			"нет TgID",
-			`{"id": 1}`,
+			"1",
+			`{}`,
 		},
 		{
 			"пустой",
+			"1",
 			"{}",
 		},
 	}
@@ -288,8 +292,8 @@ func TestE2E_UserUpdate_Validation(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			request, err := http.NewRequest(
-				http.MethodPut,
-				testServerURL+"/api/user/update",
+				http.MethodPatch,
+				fmt.Sprintf("%s/%s", usersAPI(), tc.id),
 				bytes.NewBufferString(tc.json),
 			)
 			require.NoError(t, err)
@@ -307,7 +311,7 @@ func TestE2E_UserUpdate_Validation(t *testing.T) {
 func httpDeleteUser(id int64) (*http.Response, error) {
 	request, err := http.NewRequest(
 		http.MethodDelete,
-		fmt.Sprintf("%s/api/user/delete/%d", testServerURL, id),
+		fmt.Sprintf("%s/%d", usersAPI(), id),
 		nil,
 	)
 	if err != nil {
@@ -369,7 +373,7 @@ func TestE2E_UserDelete_Validation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			request, err := http.NewRequest(
 				http.MethodDelete,
-				fmt.Sprintf("%s/api/user/delete/%s", testServerURL, tc.id),
+				fmt.Sprintf("%s/%s", usersAPI(), tc.id),
 				nil,
 			)
 			require.NoError(t, err)

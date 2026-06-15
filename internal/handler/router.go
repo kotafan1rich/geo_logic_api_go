@@ -10,11 +10,11 @@ type UserHandler interface {
 }
 
 func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler) {
-	user := router.Group("/user")
+	user := router.Group("/users")
 	{
-		user.POST("/create", userHandler.Create)
-		user.GET("/get_by_id/:id", userHandler.GetById)
-		user.PUT("/update", userHandler.Update)
-		user.DELETE("/delete/:id", userHandler.Delete)
+		user.POST("/", userHandler.Create)
+		user.GET("/:id", userHandler.GetById)
+		user.PATCH("/:id", userHandler.Update)
+		user.DELETE("/:id", userHandler.Delete)
 	}
 }

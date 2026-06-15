@@ -94,6 +94,8 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+func usersAPI() string { return testServerURL + "/api/users" }
+
 func clearTables(t *testing.T) {
 	_, err := testDB.Exec("TRUNCATE TABLE users RESTART IDENTITY CASCADE;")
 	if err != nil {
