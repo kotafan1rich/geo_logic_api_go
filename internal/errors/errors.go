@@ -10,6 +10,7 @@ type AppError struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 	Details string `json:"details,omitempty"`
+	Err     error  `json:"-"`
 }
 
 var (
@@ -29,6 +30,10 @@ func (e *AppError) Error() string {
 	return fmt.Sprintf("[%s] %s: %s", e.Code, e.Message, e.Details)
 }
 
+func (e *AppError) Unwrap() error {
+	return e.Err
+}
+
 func Wrap(err error, appErr *AppError) *AppError {
 	if err == nil {
 		return appErr
@@ -38,6 +43,7 @@ func Wrap(err error, appErr *AppError) *AppError {
 		Code:    appErr.Code,
 		Message: appErr.Message,
 		Details: err.Error(),
+		Err:     err,
 	}
 }
 
