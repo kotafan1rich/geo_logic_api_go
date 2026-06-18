@@ -14,7 +14,7 @@ GeoLogicApi предоставляет REST API для:
 
 ## Стек технологий
 
-- Go (1.25)
+- Go (1.26.1)
 - Gin (HTTP)
 - GORM (ORM)
 - PostgreSQL + PostGIS (геоданные)
