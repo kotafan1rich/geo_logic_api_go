@@ -13,7 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/user/dbmodel"
+	rentmodel "github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent/dbmodel"
+	usermodel "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user/dbmodel"
 )
 
 type App struct {
@@ -41,7 +42,7 @@ func (a *App) initHTTPServer() {
 }
 
 func (a *App) migrateDB() {
-	if err := a.diContainer.DB().GORM().AutoMigrate(&dbmodel.User{}); err != nil {
+	if err := a.diContainer.DB().GORM().AutoMigrate(&usermodel.User{}, &rentmodel.Rent{}); err != nil {
 		slog.Error("Failed to run migrations")
 		os.Exit(1)
 	}
