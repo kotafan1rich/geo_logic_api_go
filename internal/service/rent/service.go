@@ -24,7 +24,14 @@ func NewRentService(log Logger, repo repository.RentRepository) *rentService {
 }
 
 func (s *rentService) Create(ctx context.Context, lat, long float64, address, info string) (*model.Rent, error) {
-	rentToCreate, err := model.NewRent(lat, long, address, info)
+	geopoint, err := model.NewGeoPoint(lat, long)
+	if err != nil {
+		if errors.Is(err, apperrors.ErrInvalidLat) || errors.Is(err, apperrors.ErrInvalidLong) {
+			return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
+		}
+		return nil, err
+	}
+	rentToCreate, err := model.NewRent(geopoint, address, info)
 	if err != nil {
 		return nil, err
 	}
