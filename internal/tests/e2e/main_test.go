@@ -109,7 +109,7 @@ func parseBody(body io.ReadCloser, dest any) error {
 }
 
 func clearTables(t *testing.T) {
-	_, err := testDB.Exec("TRUNCATE TABLE users RESTART IDENTITY CASCADE;")
+	_, err := testDB.Exec("TRUNCATE TABLE users, rents RESTART IDENTITY CASCADE;")
 	if err != nil {
 		t.Fatalf("Ошибка очистки таблицы перед тестом: %v", err)
 	}
