@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent/dbmodel"
@@ -30,6 +31,10 @@ func (r *rentRepository) Create(ctx context.Context, rent *model.Rent) (*model.R
 		wktPoint, rent.Address, rent.Info,
 	).Scan(&id).Error
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {
+			return nil, ErrRentAlreadyExists
+		}
 		return nil, err
 	}
 	rent.ID = id
