@@ -3,7 +3,6 @@ package rent
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
@@ -21,10 +20,14 @@ func NewRepository(db database.DB) *rentRepository {
 }
 
 func (r *rentRepository) Create(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
-	wktPoint := fmt.Sprintf("POINT(%f %f)", rent.Long, rent.Lat)
+	point := dbmodel.DBGeoPoint{Lat: rent.Lat, Long: rent.Long}
+	wktPoint, err := point.Value()
+	if err != nil {
+		return nil, err
+	}
 
 	var id uint64
-	err := r.db.GORM().WithContext(ctx).Raw(
+	err = r.db.GORM().WithContext(ctx).Raw(
 		`INSERT INTO "rents" ("location", "address", "info") 
 		 VALUES (ST_GeomFromText(?, 4326), ?, ?)
 		 RETURNING id`,
