@@ -14,7 +14,7 @@ func (p *DBGeoPoint) Value() (driver.Value, error) {
 	return fmt.Sprintf("SRID=4326;POINT(%f %f)", p.Long, p.Lat), nil
 }
 
-func (p *DBGeoPoint) Scan(val interface{}) error {
+func (p *DBGeoPoint) Scan(val any) error {
 	var source []byte
 	switch v := val.(type) {
 	case []byte:
