@@ -1,0 +1,49 @@
+package rent
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent/dbmodel"
+	"gorm.io/gorm"
+)
+
+type rentRepository struct {
+	db database.DB
+}
+
+func NewRepository(db database.DB) *rentRepository {
+	return &rentRepository{db: db}
+}
+
+func (r *rentRepository) Create(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
+	wktPoint := fmt.Sprintf("POINT(%f %f)", rent.Long, rent.Lat)
+
+	var id uint64
+	err := r.db.GORM().WithContext(ctx).Raw(
+		`INSERT INTO "rents" ("location", "address", "info") 
+		 VALUES (ST_GeomFromText(?, 4326), ?, ?)
+		 RETURNING id`,
+		wktPoint, rent.Address, rent.Info,
+	).Scan(&id).Error
+	if err != nil {
+		return nil, err
+	}
+	rent.ID = id
+	return rent, nil
+}
+
+func (r *rentRepository) GetByID(ctx context.Context, id uint64) (*model.Rent, error) {
+	var rent dbmodel.Rent
+	err := r.db.GORM().WithContext(ctx).First(&rent, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrRentNotFound
+		}
+		return nil, err
+	}
+	return dbmodel.ToRent(&rent), err
+}

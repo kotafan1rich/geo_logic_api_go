@@ -12,3 +12,7 @@ type UserRepository interface {
 	Update(ctx context.Context, user *model.User) (*model.User, error)
 	Delete(ctx context.Context, id uint64) error
 }
+
+type RentRepository interface {
+	Create(ctx context.Context, rent *model.Rent) (*model.Rent, error)
+}
