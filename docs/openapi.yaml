@@ -125,14 +125,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRentsRequest'
+              $ref: '#/components/schemas/CreateRentRequest'
       responses:
         '201':
           description: Rents created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RentsResponse'
+                $ref: '#/components/schemas/RentResponse'
         '400':
           description: Validation error in the request body
           content:
@@ -149,7 +149,7 @@ paths:
       tags:
         - Rents
       parameters:
-        - name: latitude
+        - name: lat
           in: query
           required: true
           description: Latitude of the center point for searching available rents
@@ -157,7 +157,7 @@ paths:
             type: number
             format: float
             example: 37.7749
-        - name: longitude
+        - name: long
           in: query
           required: true
           description: Longitude of the center point for searching available rents
@@ -181,7 +181,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RentsResponse'
+                  $ref: '#/components/schemas/RentResponse'
         '400':
           description: Validation error in the request parameters
 
@@ -206,7 +206,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RentsResponse'
+                $ref: '#/components/schemas/RentResponse'
         '404':
           description: Rent not found  
         '400':
@@ -230,14 +230,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateRentsRequest'
+              $ref: '#/components/schemas/UpdateRentRequest'
       responses:
         '200':
           description: Rent data updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RentsResponse'
+                $ref: '#/components/schemas/RentResponse'
         '400':
           description: Validation error in the request parameters  
         '404':
@@ -307,19 +307,19 @@ components:
           example: 123456789
           description: User's Telegram ID
     
-    CreateRentsRequest:
+    CreateRentRequest:
       type: object
       required:
-        - latitude
-        - longitude
+        - lat
+        - long
         - address
       properties:
-        latitude:
+        lat:
           type: number
           format: float
           example: 37.7749
           description: Latitude of rents location
-        longitude:
+        long:
           type: number
           format: float
           example: -122.4194
@@ -333,7 +333,7 @@ components:
           example: "Additional information about the rents"
           description: Additional information about the rents
 
-    RentsResponse:
+    RentResponse:
       type: object
       properties:
         id:
@@ -341,12 +341,12 @@ components:
           format: int64
           example: 1
           description: Internal rents ID
-        latitude:
+        lat:
           type: number
           format: float
           example: 37.7749
           description: Latitude of rents location
-        longitude:
+        long:
           type: number
           format: float
           example: -122.4194
@@ -360,15 +360,15 @@ components:
           example: "Additional information about the rents"
           description: Additional information about the rents
 
-    UpdateRentsRequest:
+    UpdateRentRequest:
       type: object
       properties:
-        latitude:
+        lat:
           type: number
           format: float
           example: 37.7749
           description: New latitude of rents location
-        longitude:
+        long:
           type: number
           format: float
           example: -122.4194
