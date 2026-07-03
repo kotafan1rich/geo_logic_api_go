@@ -15,9 +15,9 @@ tasks:
       - docker compose down
 
   logs:
-  desc: "View containers logs"
-  cmds:
-    - docker compose logs -f
+    desc: "View containers logs"
+    cmds:
+      - docker compose logs -f
 
   run:
     desc: "Run the Go application"
