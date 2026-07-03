@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"testing"
 
@@ -15,21 +14,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func httpAddUser(tgId uint64) (*http.Response, error) {
 	payload := dto.CreateUserRequest{TgID: tgId}
 
-	jsonBytes, _ := json.Marshal(payload)
+	jsonBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
 
 	return httpClient.Post(usersAPI(), "application/json", bytes.NewBuffer(jsonBytes))
-}
-
-func parseBody(body io.ReadCloser, dest any) error {
-	err := json.NewDecoder(body).Decode(dest)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func addUser(tgId uint64) (*dto.UserResponse, error) {

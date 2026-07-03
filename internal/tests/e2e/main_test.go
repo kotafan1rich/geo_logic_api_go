@@ -5,7 +5,9 @@ package e2e
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -95,6 +97,16 @@ func TestMain(m *testing.M) {
 }
 
 func usersAPI() string { return testServerURL + "/api/users" }
+
+func rentsAPI() string { return testServerURL + "/api/rents" }
+
+func parseBody(body io.ReadCloser, dest any) error {
+	err := json.NewDecoder(body).Decode(dest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func clearTables(t *testing.T) {
 	_, err := testDB.Exec("TRUNCATE TABLE users RESTART IDENTITY CASCADE;")
