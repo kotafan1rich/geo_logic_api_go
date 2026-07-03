@@ -5,10 +5,12 @@ import (
 	"fmt"
 
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 )
 
-type DBGeoPoint model.GeoPoint
+type DBGeoPoint struct {
+	Lat  float64
+	Long float64
+}
 
 func (p *DBGeoPoint) Value() (driver.Value, error) {
 	return fmt.Sprintf("SRID=4326;POINT(%f %f)", p.Long, p.Lat), nil
