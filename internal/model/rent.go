@@ -2,6 +2,13 @@ package model
 
 import "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 
+const (
+	maxLatitude  = 90.0
+	minLatitude  = -90.0
+	maxLongitude = 180.0
+	minLongitude = -180.0
+)
+
 type Rent struct {
 	ID      uint64
 	Lat     float64
@@ -11,10 +18,10 @@ type Rent struct {
 }
 
 func NewRent(lat, long float64, address, info string) (*Rent, error) {
-	if lat < -90 || lat > 90 {
+	if lat < minLatitude || lat > maxLatitude {
 		return nil, errors.ErrInvalidLat
 	}
-	if long < -180 || long > 180 {
+	if long < minLongitude || long > maxLongitude {
 		return nil, errors.ErrInvalidLong
 	}
 	return &Rent{
