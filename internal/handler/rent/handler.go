@@ -2,6 +2,7 @@ package rent
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
@@ -33,4 +34,19 @@ func (h *rentHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, dto.ToRentResponse(rent))
+}
+
+func (h *rentHandler) GetById(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil || id == 0 {
+		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+		return
+	}
+
+	rent, err := h.service.GetById(c.Request.Context(), id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToRentResponse(rent))
 }
