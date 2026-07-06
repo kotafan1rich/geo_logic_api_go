@@ -11,7 +11,7 @@ type UserHandler interface {
 
 type RentHandler interface {
 	Create(c *gin.Context)
-	// GetById(c *gin.Context)
+	GetById(c *gin.Context)
 	// Available(c *gin.Context)
 	// Delete(c *gin.Context)
 }
@@ -28,7 +28,7 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 	rent := router.Group("/rents")
 	{
 		rent.POST("/", rentHandler.Create)
-		// rent.GET("/:id", rentHandler.GetById)
+		rent.GET("/:id", rentHandler.GetById)
 		// rent.GET("/available", rentHandler.Available)
 		// rent.DELETE("/:id", rentHandler.Delete)
 
