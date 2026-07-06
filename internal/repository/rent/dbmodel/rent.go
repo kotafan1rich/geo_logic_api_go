@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
+	"github.com/twpayne/go-geom/encoding/wkb"
 )
 
 type DBGeoPoint struct {
@@ -24,11 +25,22 @@ func (p *DBGeoPoint) Scan(val any) error {
 	case string:
 		source = []byte(v)
 	default:
-		return fmt.Errorf("несовместимый тип для DBGeoPoint: %T", val)
+		return fmt.Errorf("conflict type for DBGeoPoint: %T", val)
 	}
 
-	_, err := fmt.Sscanf(string(source), "POINT(%f %f)", &p.Long, &p.Lat)
-	return err
+	geomt, err := wkb.Unmarshal(source)
+	if err != nil {
+		return fmt.Errorf("error decode WKB: %w", err)
+	}
+
+	point := geomt.FlatCoords()
+
+	if len(point) >= 2 {
+		p.Long = point[0]
+		p.Lat = point[1]
+		return nil
+	}
+	return fmt.Errorf("Failed to retrieve coordinates from the geometry")
 }
 
 type Rent struct {
