@@ -15,4 +15,5 @@ type UserRepository interface {
 
 type RentRepository interface {
 	Create(ctx context.Context, rent *model.Rent) (*model.Rent, error)
+	GetByID(ctx context.Context, id uint64) (*model.Rent, error)
 }
