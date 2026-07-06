@@ -3,6 +3,7 @@ package e2e
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -32,20 +33,20 @@ func httpAddRent(lat, long float64, address, info string) (*http.Response, error
 	return httpClient.Post(rentsAPI(), "application/json", bytes.NewBuffer(jsonBytes))
 }
 
-// func addRent(lat, long float64, address, info string) (*dto.RentResponse, error) {
-// 	resp, err := httpAddRent(lat, long, address, info)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer resp.Body.Close()
+func addRent(lat, long float64, address, info string) (*dto.RentResponse, error) {
+	resp, err := httpAddRent(lat, long, address, info)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
-// 	var createdRent dto.RentResponse
-// 	err = parseBody(resp.Body, &createdRent)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &createdRent, nil
-// }
+	var createdRent dto.RentResponse
+	err = parseBody(resp.Body, &createdRent)
+	if err != nil {
+		return nil, err
+	}
+	return &createdRent, nil
+}
 
 func TestE2E_RentAdd(t *testing.T) {
 	clearTables(t)
@@ -125,6 +126,69 @@ func TestE2E_RentAdd_Validation(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			resp, err := httpClient.Post(rentsAPI(), "application/json", bytes.NewBufferString(tc.json))
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	}
+}
+
+func httpGetRentByID(id int64) (*http.Response, error) {
+	return httpClient.Get(fmt.Sprintf("%s/%d", rentsAPI(), id))
+}
+
+func TestE2E_RentGetByID(t *testing.T) {
+	clearTables(t)
+	createdRent, err := addRent(validLat, validLong, validAddress, validAddress)
+	require.NoError(t, err)
+
+	resp, err := httpGetRentByID(int64(createdRent.ID))
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	var parsedRent dto.RentResponse
+	err = parseBody(resp.Body, &parsedRent)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, createdRent.Lat, parsedRent.Lat)
+	assert.Equal(t, createdRent.Long, parsedRent.Long)
+	assert.Equal(t, createdRent.Address, parsedRent.Address)
+	assert.Equal(t, createdRent.Info, parsedRent.Info)
+}
+
+func TestE2E_RentGetByID_NotFound(t *testing.T) {
+	clearTables(t)
+	resp, err := httpGetRentByID(1)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestE2E_RentGetByID_Validation(t *testing.T) {
+	clearTables(t)
+
+	type testCase struct {
+		name string
+		tgId string
+	}
+
+	tests := []testCase{
+		{
+			"Отрицательный ID",
+			"-1",
+		},
+		{
+			"Не число",
+			"one",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", rentsAPI(), tc.tgId))
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
