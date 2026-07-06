@@ -45,3 +45,14 @@ func (s *rentService) Create(ctx context.Context, lat, long float64, address, in
 
 	return createdRent, nil
 }
+
+func (s *rentService) GetById(ctx context.Context, id uint64) (*model.Rent, error) {
+	result, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, rent.ErrRentAlreadyExists) {
+			return nil, apperrors.Wrap(err, apperrors.ErrNotFound)
+		}
+		return nil, err
+	}
+	return result, nil
+}
