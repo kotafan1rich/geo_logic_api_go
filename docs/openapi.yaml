@@ -168,11 +168,11 @@ paths:
         - name: radius
           in: query
           required: false
-          description: Search radius in kilometers (default is 5 km)
+          description: Search radius in metrs (default is 5 km)
           schema:
             type: number
-            format: float
-            example: 5.0
+            format: int
+            example: 500
       responses:
         '200':
           description: Successful response with a list of available rents
