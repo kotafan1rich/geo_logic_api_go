@@ -55,3 +55,20 @@ func (r *rentRepository) GetByID(ctx context.Context, id uint64) (*model.Rent, e
 	}
 	return dbmodel.ToRent(&rent), err
 }
+
+func (r *rentRepository) Update(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
+	rentModel := dbmodel.ToRentModel(rent)
+	result := r.db.GORM().WithContext(ctx).Model(&rentModel).Updates(&rentModel)
+	if result.Error != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {
+			return nil, ErrRentAlreadyExists
+		}
+		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, ErrRentNotFound
+	}
+	return rent, nil
+}
