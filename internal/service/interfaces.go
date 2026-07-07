@@ -16,4 +16,5 @@ type UserService interface {
 type RentService interface {
 	Create(ctx context.Context, lat, long float64, address, info string) (*model.Rent, error)
 	GetById(ctx context.Context, id uint64) (*model.Rent, error)
+	Update(ctx context.Context, id uint64, lat, long float64, address, info string) (*model.Rent, error)
 }

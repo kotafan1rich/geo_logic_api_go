@@ -20,7 +20,7 @@ func NewRepository(db database.DB) *rentRepository {
 }
 
 func (r *rentRepository) Create(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
-	point := dbmodel.DBGeoPoint{Lat: rent.Lat, Long: rent.Long}
+	point := dbmodel.DBGeoPoint(*rent.Geopoint)
 	wktPoint, err := point.Value()
 	if err != nil {
 		return nil, err

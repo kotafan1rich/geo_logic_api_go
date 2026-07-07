@@ -6,18 +6,17 @@ import (
 
 func ToRent(rent *Rent) *model.Rent {
 	return &model.Rent{
-		ID:      rent.ID,
-		Lat:     rent.Location.Lat,
-		Long:    rent.Location.Long,
-		Address: rent.Address,
-		Info:    rent.Info,
+		ID:       rent.ID,
+		Geopoint: (*model.GeoPoint)(&rent.Location),
+		Address:  rent.Address,
+		Info:     rent.Info,
 	}
 }
 
 func ToRentModel(rent *model.Rent) *Rent {
 	return &Rent{
-		Location: DBGeoPoint{Lat: rent.Lat, Long: rent.Long},
-		Address: rent.Address,
-		Info:    rent.Info,
+		Location: DBGeoPoint(*rent.Geopoint),
+		Address:  rent.Address,
+		Info:     rent.Info,
 	}
 }
