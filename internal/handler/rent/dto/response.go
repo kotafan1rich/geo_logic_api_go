@@ -5,5 +5,5 @@ type RentResponse struct {
 	Lat     float64 `json:"lat"`
 	Long    float64 `json:"long"`
 	Address string  `json:"address"`
-	Info    string  `json:"info"`
+	Info    *string `json:"info"`
 }

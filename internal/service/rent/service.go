@@ -23,7 +23,7 @@ func NewRentService(log Logger, repo repository.RentRepository) *rentService {
 	return &rentService{repo: repo, log: log}
 }
 
-func (s *rentService) Create(ctx context.Context, lat, long float64, address, info string) (*model.Rent, error) {
+func (s *rentService) Create(ctx context.Context, lat, long float64, address string, info *string) (*model.Rent, error) {
 	geopoint, err := model.NewGeoPoint(lat, long)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidLat) || errors.Is(err, apperrors.ErrInvalidLong) {
@@ -55,7 +55,7 @@ func (s *rentService) GetById(ctx context.Context, id uint64) (*model.Rent, erro
 	return result, nil
 }
 
-func (s *rentService) Update(ctx context.Context, id uint64, lat, long float64, address, info string) (*model.Rent, error) {
+func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64, address, info *string) (*model.Rent, error) {
 	oldRent, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentNotFound) {
@@ -63,11 +63,11 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long float64, 
 		}
 		return nil, err
 	}
-	if oldRent.Geopoint.Lat == lat && oldRent.Geopoint.Long == long && oldRent.Address == address && oldRent.Info == info {
-		return oldRent, nil
-	}
-	if lat != 0 {
-		err = oldRent.Geopoint.UpdateLat(lat)
+	// if oldRent.Geopoint.Lat == lat && oldRent.Geopoint.Long == long && oldRent.Address == address && oldRent.Info == info {
+	// 	return oldRent, nil
+	// }
+	if lat != nil {
+		err = oldRent.Geopoint.UpdateLat(*lat)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidLat) {
 				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
@@ -75,8 +75,8 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long float64, 
 			return nil, err
 		}
 	}
-	if long != 0 {
-		err = oldRent.Geopoint.UpdateLong(long)
+	if long != nil {
+		err = oldRent.Geopoint.UpdateLong(*long)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidLong) {
 				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
@@ -85,12 +85,12 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long float64, 
 		}
 	}
 
-	if address != "" {
-		oldRent.UpdateAddress(address)
+	if address != nil {
+		oldRent.UpdateAddress(*address)
 	}
 
-	if info != "" {
-		oldRent.UpdateInfo(info)
+	if info != nil {
+		oldRent.UpdateInfo(*info)
 	}
 
 	updatedRent, err := s.repo.Update(ctx, oldRent)

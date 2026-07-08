@@ -13,10 +13,10 @@ type Rent struct {
 	ID       uint64
 	Geopoint *GeoPoint
 	Address  string
-	Info     string
+	Info     *string
 }
 
-func NewRent(geopoint *GeoPoint, address, info string) *Rent {
+func NewRent(geopoint *GeoPoint, address string, info *string) *Rent {
 	return &Rent{
 		Geopoint: geopoint,
 		Address:  address,
@@ -33,5 +33,5 @@ func (r *Rent) UpdateAddress(address string) error {
 }
 
 func (r *Rent) UpdateInfo(info string) {
-	r.Info = info
+	r.Info = &info
 }
