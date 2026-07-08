@@ -19,54 +19,53 @@ func NewHandler(service service.RentService) *rentHandler {
 	return &rentHandler{service: service}
 }
 
-func (h *rentHandler) Create(ctx *gin.Context) {
+func (h *rentHandler) Create(c *gin.Context) {
 	var req dto.CreateRentRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		ctx.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
-
-	rent, err := h.service.Create(ctx.Request.Context(), req.Lat, req.Long, req.Address, req.Info)
+	rent, err := h.service.Create(c.Request.Context(), req.Lat, req.Long, req.Address, req.Info)
 	if err != nil {
-		ctx.Error(err)
+		c.Error(err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, dto.ToRentResponse(rent))
+	c.JSON(http.StatusCreated, dto.ToRentResponse(rent))
 }
 
-func (h *rentHandler) GetById(ctx *gin.Context) {
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+func (h *rentHandler) GetById(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil || id == 0 {
-		ctx.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	rent, err := h.service.GetById(ctx.Request.Context(), id)
+	rent, err := h.service.GetById(c.Request.Context(), id)
 	if err != nil {
-		ctx.Error(err)
+		c.Error(err)
 		return
 	}
-	ctx.JSON(http.StatusOK, dto.ToRentResponse(rent))
+	c.JSON(http.StatusOK, dto.ToRentResponse(rent))
 }
 
-func (h *rentHandler) Update(ctx *gin.Context) {
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+func (h *rentHandler) Update(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil || id == 0 {
-		ctx.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
 		return
 	}
 	var req dto.UpdateRentRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		ctx.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
-	updatedRent, err := h.service.Update(ctx, id, req.Lat, req.Long, req.Address, req.Info)
+	updatedRent, err := h.service.Update(c.Request.Context(), id, req.Lat, req.Long, req.Address, req.Info)
 	if err != nil {
-		ctx.Error(err)
+		c.Error(err)
 		return
 	}
-	ctx.JSON(http.StatusOK, dto.ToRentResponse(updatedRent))
+	c.JSON(http.StatusOK, dto.ToRentResponse(updatedRent))
 }

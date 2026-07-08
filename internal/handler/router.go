@@ -3,18 +3,18 @@ package handler
 import "github.com/gin-gonic/gin"
 
 type UserHandler interface {
-	Create(ctx *gin.Context)
-	GetById(ctx *gin.Context)
-	Update(ctx *gin.Context)
-	Delete(ctx *gin.Context)
+	Create(c *gin.Context)
+	GetById(c *gin.Context)
+	Update(c *gin.Context)
+	Delete(c *gin.Context)
 }
 
 type RentHandler interface {
-	Create(ctx *gin.Context)
-	GetById(ctx *gin.Context)
-	Update(ctx *gin.Context)
-	// Available(ctx *gin.Context)
-	// Delete(ctx *gin.Context)
+	Create(c *gin.Context)
+	GetById(c *gin.Context)
+	Update(c *gin.Context)
+	// Available(c *gin.Context)
+	// Delete(c *gin.Context)
 }
 
 func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler) {

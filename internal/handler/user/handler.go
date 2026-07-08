@@ -19,70 +19,70 @@ func NewHandler(service service.UserService) *userHandler {
 	return &userHandler{service: service}
 }
 
-func (h *userHandler) Create(ctx *gin.Context) {
+func (h *userHandler) Create(c *gin.Context) {
 	var req dto.CreateUserRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		ctx.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	user, err := h.service.Create(ctx.Request.Context(), req.TgID)
+	user, err := h.service.Create(c.Request.Context(), req.TgID)
 	if err != nil {
-		ctx.Error(err)
+		c.Error(err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, dto.ToUserResponse(user))
+	c.JSON(http.StatusCreated, dto.ToUserResponse(user))
 }
 
-func (h *userHandler) GetById(ctx *gin.Context) {
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+func (h *userHandler) GetById(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil || id == 0 {
-		ctx.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	user, err := h.service.GetById(ctx.Request.Context(), id)
+	user, err := h.service.GetById(c.Request.Context(), id)
 	if err != nil {
-		ctx.Error(err)
+		c.Error(err)
 		return
 	}
-	ctx.JSON(http.StatusOK, dto.ToUserResponse(user))
+	c.JSON(http.StatusOK, dto.ToUserResponse(user))
 }
 
-func (h *userHandler) Update(ctx *gin.Context) {
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+func (h *userHandler) Update(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil || id == 0 {
-		ctx.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
 		return
 	}
 	var req dto.UpdateUserRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		ctx.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	user, err := h.service.Update(ctx.Request.Context(), id, req.TgID)
+	user, err := h.service.Update(c.Request.Context(), id, req.TgID)
 	if err != nil {
-		ctx.Error(err)
+		c.Error(err)
 		return
 	}
-	ctx.JSON(http.StatusOK, dto.ToUserResponse(user))
+	c.JSON(http.StatusOK, dto.ToUserResponse(user))
 }
 
-func (h *userHandler) Delete(ctx *gin.Context) {
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+func (h *userHandler) Delete(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil || id == 0 {
-		ctx.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	err = h.service.Delete(ctx.Request.Context(), id)
+	err = h.service.Delete(c.Request.Context(), id)
 	if err != nil {
-		ctx.Error(err)
+		c.Error(err)
 		return
 	}
-	ctx.Status(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }
