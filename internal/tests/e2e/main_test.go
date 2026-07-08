@@ -114,3 +114,5 @@ func clearTables(t *testing.T) {
 		t.Fatalf("Ошибка очистки таблицы перед тестом: %v", err)
 	}
 }
+
+func ptr[T any](v T) *T { return &v }

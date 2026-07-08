@@ -12,12 +12,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const validLat = 67.6767
-const validLong = 67.6767
-const validAddress = "lol"
-const validInfo = "lool"
+const (
+	validLat     = 67.6767
+	validLong    = 67.6767
+	validAddress = "lol"
+	validInfo    = "lool"
+)
 
-func httpAddRent(lat, long float64, address, info string) (*http.Response, error) {
+func httpAddRent(lat, long float64, address string, info *string) (*http.Response, error) {
 	payload := dto.CreateRentRequest{
 		Lat:     lat,
 		Long:    long,
@@ -33,7 +35,7 @@ func httpAddRent(lat, long float64, address, info string) (*http.Response, error
 	return httpClient.Post(rentsAPI(), "application/json", bytes.NewBuffer(jsonBytes))
 }
 
-func addRent(lat, long float64, address, info string) (*dto.RentResponse, error) {
+func addRent(lat, long float64, address string, info *string) (*dto.RentResponse, error) {
 	resp, err := httpAddRent(lat, long, address, info)
 	if err != nil {
 		return nil, err
@@ -51,7 +53,7 @@ func addRent(lat, long float64, address, info string) (*dto.RentResponse, error)
 func TestE2E_RentAdd(t *testing.T) {
 	clearTables(t)
 
-	resp1, err := httpAddRent(validLat, validLong, validAddress, "")
+	resp1, err := httpAddRent(validLat, validLong, validAddress, nil)
 	require.NoError(t, err)
 	defer resp1.Body.Close()
 
@@ -63,9 +65,9 @@ func TestE2E_RentAdd(t *testing.T) {
 	assert.Equal(t, validLat, createdRent1.Lat)
 	assert.Equal(t, validLong, createdRent1.Long)
 	assert.Equal(t, validAddress, createdRent1.Address)
-	assert.Equal(t, "", createdRent1.Info)
+	assert.Equal(t, (*string)(nil), createdRent1.Info)
 
-	resp2, err := httpAddRent(validLat, validLong, validAddress, validInfo)
+	resp2, err := httpAddRent(validLat, validLong, validAddress, ptr(validInfo))
 	require.NoError(t, err)
 	defer resp2.Body.Close()
 
@@ -77,7 +79,7 @@ func TestE2E_RentAdd(t *testing.T) {
 	assert.Equal(t, validLat, createdRent2.Lat)
 	assert.Equal(t, validLong, createdRent2.Long)
 	assert.Equal(t, validAddress, createdRent2.Address)
-	assert.Equal(t, validInfo, createdRent2.Info)
+	assert.Equal(t, validInfo, *createdRent2.Info)
 }
 
 func TestE2E_RentAdd_Validation(t *testing.T) {
@@ -140,7 +142,7 @@ func httpGetRentByID(id int64) (*http.Response, error) {
 
 func TestE2E_RentGetByID(t *testing.T) {
 	clearTables(t)
-	createdRent, err := addRent(validLat, validLong, validAddress, validAddress)
+	createdRent, err := addRent(validLat, validLong, validAddress, ptr(validInfo))
 	require.NoError(t, err)
 
 	resp, err := httpGetRentByID(int64(createdRent.ID))
@@ -172,7 +174,7 @@ func TestE2E_RentGetByID_Validation(t *testing.T) {
 
 	type testCase struct {
 		name string
-		tgId string
+		ID   string
 	}
 
 	tests := []testCase{
@@ -188,11 +190,159 @@ func TestE2E_RentGetByID_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", rentsAPI(), tc.tgId))
+			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", rentsAPI(), tc.ID))
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
 			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	}
+}
+
+func httpUpdateRent(id int64, payload any) (*http.Response, error) {
+	jsonBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest(
+		http.MethodPatch,
+		fmt.Sprintf("%s/%d", rentsAPI(), id),
+		bytes.NewBuffer(jsonBytes),
+	)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	return httpClient.Do(request)
+}
+
+func TestE2E_RentUpdate(t *testing.T) {
+	clearTables(t)
+
+	type testCase struct {
+		name             string
+		baseRent         dto.CreateRentRequest
+		request          dto.UpdateRentRequest
+		expectedResponse dto.RentResponse
+	}
+
+	validRentRequest := dto.CreateRentRequest{
+		Lat:     validLat,
+		Long:    validLong,
+		Address: validAddress,
+		Info:    ptr(validInfo),
+	}
+
+	tests := []testCase{
+		{
+			name:             "Update lat",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Lat: ptr(1.0)},
+			expectedResponse: dto.RentResponse{Lat: 1.0, Long: validLong, Address: validAddress, Info: ptr(validInfo)},
+		},
+		{
+			name:             "Update long",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Long: ptr(1.0)},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: 1.0, Address: validAddress, Info: ptr(validInfo)},
+		},
+		{
+			name:             "Update address",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Address: ptr("ll")},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: "ll", Info: ptr(validInfo)},
+		},
+		{
+			name:             "Update info",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Info: ptr("ll")},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: ptr("ll")},
+		},
+		{
+			name:             "Update 2 params",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Lat: ptr(1.0), Long: ptr(2.0)},
+			expectedResponse: dto.RentResponse{Lat: 1.0, Long: 2.0, Address: validAddress, Info: ptr(validInfo)},
+		},
+		{
+			name:             "Update address with empty info",
+			baseRent:         dto.CreateRentRequest{Lat: validLat, Long: validLong, Address: validAddress},
+			request:          dto.UpdateRentRequest{Address: ptr("ll")},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: "ll", Info: (*string)(nil)},
+		},
+		{
+			name:             "Update info with empty info",
+			baseRent:         dto.CreateRentRequest{Lat: validLat, Long: validLong, Address: validAddress},
+			request:          dto.UpdateRentRequest{Info: ptr("ll")},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: ptr("ll")},
+		},
+		{
+			name:             "Update lat to absolute zero",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Lat: ptr(0.0)}, // Раньше бы это поле проигнорировалось
+			expectedResponse: dto.RentResponse{Lat: 0.0, Long: validLong, Address: validAddress, Info: ptr(validInfo)},
+		},
+		{
+			name:             "Update long to absolute zero",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Long: ptr(0.0)},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: 0.0, Address: validAddress, Info: ptr(validInfo)},
+		},
+		{
+			name:             "Update lat to max boundary (North Pole)",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Lat: ptr(90.0)},
+			expectedResponse: dto.RentResponse{Lat: 90.0, Long: validLong, Address: validAddress, Info: ptr(validInfo)},
+		},
+		{
+			name:             "Update long to max boundary",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Long: ptr(180.0)},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: 180.0, Address: validAddress, Info: ptr(validInfo)},
+		},
+		{
+			name:     "Update absolutely all fields simultaneously",
+			baseRent: validRentRequest,
+			request: dto.UpdateRentRequest{
+				Lat:     ptr(45.5),
+				Long:    ptr(120.3),
+				Address: ptr("Новый проспект, дом 10"),
+				Info:    ptr("Вход со двора, код 44"),
+			},
+			expectedResponse: dto.RentResponse{Lat: 45.5, Long: 120.3, Address: "Новый проспект, дом 10", Info: ptr("Вход со двора, код 44")},
+		},
+		{
+			name:             "Empty patch request (no body fields sent)",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{}, // Все поля внутри равны nil
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: ptr(validInfo)},
+		},
+		{
+			name:             "Update info from text to empty string",
+			baseRent:         validRentRequest,
+			request:          dto.UpdateRentRequest{Info: ptr("")}, // Затираем комментарий
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: ptr("")},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			createdRent, err := addRent(tc.baseRent.Lat, tc.baseRent.Long, tc.baseRent.Address, tc.baseRent.Info)
+			require.NoError(t, err)
+			tc.expectedResponse.ID = createdRent.ID
+
+			resp, err := httpUpdateRent(int64(createdRent.ID), tc.request)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			require.Equal(t, http.StatusOK, resp.StatusCode)
+
+			var updatedRent dto.RentResponse
+			err = parseBody(resp.Body, &updatedRent)
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expectedResponse, updatedRent)
 		})
 	}
 }
