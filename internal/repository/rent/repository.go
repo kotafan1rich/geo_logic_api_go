@@ -58,7 +58,11 @@ func (r *rentRepository) GetByID(ctx context.Context, id uint64) (*model.Rent, e
 
 func (r *rentRepository) Update(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
 	rentModel := dbmodel.ToRentModel(rent)
-	result := r.db.GORM().WithContext(ctx).Model(&rentModel).Updates(&rentModel)
+	result := r.db.GORM().WithContext(ctx).Model(&dbmodel.Rent{}).Where("id = ?", rentModel.ID).Updates(map[string]any{
+		"address":  rentModel.Address,
+		"info":     rentModel.Info,
+		"location": gorm.Expr("ST_SetSRID(ST_Point(?, ?), 4326)", rentModel.Location.Long, rentModel.Location.Lat),
+	})
 	if result.Error != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {

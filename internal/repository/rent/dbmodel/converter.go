@@ -14,9 +14,11 @@ func ToRent(rent *Rent) *model.Rent {
 }
 
 func ToRentModel(rent *model.Rent) *Rent {
-	return &Rent{
+	res := &Rent{
 		Location: DBGeoPoint(*rent.Geopoint),
 		Address:  rent.Address,
 		Info:     rent.Info,
 	}
+	res.ID = rent.ID
+	return res
 }
