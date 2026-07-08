@@ -30,7 +30,7 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 	{
 		rent.POST("/", rentHandler.Create)
 		rent.GET("/:id", rentHandler.GetById)
-		user.PATCH("/:id", rentHandler.Update)
+		rent.PATCH("/:id", rentHandler.Update)
 		// rent.GET("/available", rentHandler.Available)
 		// rent.DELETE("/:id", rentHandler.Delete)
 
