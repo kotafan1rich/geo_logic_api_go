@@ -69,3 +69,18 @@ func (h *rentHandler) Update(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.ToRentResponse(updatedRent))
 }
+
+func (h *rentHandler) Delete(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil || id == 0 {
+		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+		return
+	}
+
+	err = h.service.Delete(c.Request.Context(), id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

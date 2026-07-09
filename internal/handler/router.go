@@ -13,8 +13,8 @@ type RentHandler interface {
 	Create(c *gin.Context)
 	GetById(c *gin.Context)
 	Update(c *gin.Context)
+	Delete(c *gin.Context)
 	// Available(c *gin.Context)
-	// Delete(c *gin.Context)
 }
 
 func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler) {
@@ -31,8 +31,7 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 		rent.POST("/", rentHandler.Create)
 		rent.GET("/:id", rentHandler.GetById)
 		rent.PATCH("/:id", rentHandler.Update)
+		rent.DELETE("/:id", rentHandler.Delete)
 		// rent.GET("/available", rentHandler.Available)
-		// rent.DELETE("/:id", rentHandler.Delete)
-
 	}
 }
