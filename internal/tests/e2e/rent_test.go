@@ -347,6 +347,23 @@ func TestE2E_RentUpdate(t *testing.T) {
 	}
 }
 
+func TestE2E_RentUpdate_NotFound(t *testing.T) {
+	clearTables(t)
+
+	validRentRequest := dto.CreateRentRequest{
+		Lat:     validLat,
+		Long:    validLong,
+		Address: validAddress,
+		Info:    ptr(validInfo),
+	}
+
+	resp, err := httpUpdateRent(1, validRentRequest)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
 func TestE2E_RentUpdate_Validation(t *testing.T) {
 	clearTables(t)
 
