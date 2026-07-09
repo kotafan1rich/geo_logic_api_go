@@ -13,6 +13,14 @@ func ToRent(rent *Rent) *model.Rent {
 	}
 }
 
+func ToRentSlice(rents []Rent) []model.Rent {
+	result := make([]model.Rent, 0, len(rents))
+	for _, rent := range rents {
+		result = append(result, *ToRent(&rent))
+	}
+	return result
+}
+
 func ToRentModel(rent *model.Rent) *Rent {
 	res := &Rent{
 		Location: DBGeoPoint(*rent.Geopoint),

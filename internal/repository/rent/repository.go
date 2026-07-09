@@ -88,3 +88,18 @@ func (r *rentRepository) Delete(ctx context.Context, id uint64) error {
 	}
 	return nil
 }
+
+func (r *rentRepository) Available(ctx context.Context, geopoint *model.GeoPoint, radius uint64) ([]model.Rent, error) {
+	var rents []dbmodel.Rent
+
+	err := r.db.GORM().WithContext(ctx).Model(&dbmodel.Rent{}).Where(
+		"ST_DWithin(location, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ?)",
+		geopoint.Long,
+		geopoint.Lat,
+		radius,
+	).Find(&rents).Error
+	if err != nil {
+		return nil, err
+	}
+	return dbmodel.ToRentSlice(rents), nil
+}
