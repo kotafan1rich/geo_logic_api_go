@@ -89,7 +89,7 @@ func (r *rentRepository) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (r *rentRepository) Available(ctx context.Context, geopoint *model.GeoPoint, radius uint64) ([]model.Rent, error) {
+func (r *rentRepository) Available(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Rent, error) {
 	var rents []dbmodel.Rent
 
 	err := r.db.GORM().WithContext(ctx).Model(&dbmodel.Rent{}).Where(

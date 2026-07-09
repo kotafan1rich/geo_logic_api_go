@@ -18,5 +18,5 @@ type RentService interface {
 	GetById(ctx context.Context, id uint64) (*model.Rent, error)
 	Update(ctx context.Context, id uint64, lat, long *float64, address, info *string) (*model.Rent, error)
 	Delete(ctx context.Context, id uint64) error
-	Available(ctx context.Context, geopoint *model.GeoPoint, radius uint64) ([]model.Rent, error)
+	Available(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Rent, error)
 }

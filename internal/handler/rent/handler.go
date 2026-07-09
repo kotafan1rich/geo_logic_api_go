@@ -99,7 +99,7 @@ func (h *rentHandler) Available(c *gin.Context) {
 		c.Error(errors.ValidationError(err.Error())).SetType(gin.ErrorTypeBind)
 		return
 	}
-	results, err := h.service.Available(c.Request.Context(), geopoint, *req.Radius)
+	results, err := h.service.Available(c.Request.Context(), geopoint, req.Radius)
 	if err != nil {
 		c.Error(err)
 		return

@@ -6,4 +6,5 @@ var (
 	ErrInvalidLat     = errors.New("invalid latitude")
 	ErrInvalidLong    = errors.New("invalid longitude")
 	ErrInvalidAddress = errors.New("invalid address")
+	ErrInvalidRadius  = errors.New("invalid radius")
 )

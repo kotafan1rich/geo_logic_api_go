@@ -10,6 +10,11 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent"
 )
 
+const (
+	defaultRadius = 500
+	maxRadius     = 5000
+)
+
 type Logger interface {
 	Error(msg string, args ...any)
 }
@@ -112,8 +117,17 @@ func (s *rentService) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (s *rentService) Available(ctx context.Context, geopoint *model.GeoPoint, radius uint64) ([]model.Rent, error) {
-	results, err := s.repo.Available(ctx, geopoint, radius)
+func (s *rentService) Available(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Rent, error) {
+	var finalRadius uint16
+	if radius == nil {
+		finalRadius = defaultRadius
+	} else {
+		finalRadius = *radius
+		if finalRadius == 0 || finalRadius > maxRadius {
+			return nil, apperrors.Wrap(apperrors.ErrInvalidRadius, apperrors.ValidationError(apperrors.ErrInvalidRadius.Error()))
+		}
+	}
+	results, err := s.repo.Available(ctx, geopoint, finalRadius)
 	if err != nil {
 		return nil, err
 	}
