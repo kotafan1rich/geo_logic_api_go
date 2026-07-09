@@ -76,3 +76,15 @@ func (r *rentRepository) Update(ctx context.Context, rent *model.Rent) (*model.R
 	}
 	return rent, nil
 }
+
+func (r *rentRepository) Delete(ctx context.Context, id uint64) error {
+	result := r.db.GORM().WithContext(ctx).Delete(&dbmodel.Rent{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrRentNotFound
+	}
+	return nil
+}
