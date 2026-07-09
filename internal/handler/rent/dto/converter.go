@@ -11,3 +11,11 @@ func ToRentResponse(rent *model.Rent) *RentResponse {
 		Info:    rent.Info,
 	}
 }
+
+func ToRentResponseSlice(rents []model.Rent) []*RentResponse {
+	result := make([]*RentResponse, 0, len(rents))
+	for _, rent := range rents {
+		result = append(result, ToRentResponse(&rent))
+	}
+	return result
+}

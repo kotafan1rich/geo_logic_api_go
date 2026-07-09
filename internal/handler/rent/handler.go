@@ -8,6 +8,7 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent/dto"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
@@ -83,4 +84,25 @@ func (h *rentHandler) Delete(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (h *rentHandler) Available(c *gin.Context) {
+	var req dto.AvailableRentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		errDetails := handler.ParseValidationError(err)
+		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		return
+	}
+
+	geopoint, err := model.NewGeoPoint(req.Lat, req.Long)
+	if err != nil {
+		c.Error(errors.ValidationError(err.Error())).SetType(gin.ErrorTypeBind)
+		return
+	}
+	results, err := h.service.Available(c.Request.Context(), geopoint, *req.Radius)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ToRentResponseSlice(results))
 }
