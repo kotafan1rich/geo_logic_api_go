@@ -63,9 +63,7 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 		}
 		return nil, err
 	}
-	// if oldRent.Geopoint.Lat == lat && oldRent.Geopoint.Long == long && oldRent.Address == address && oldRent.Info == info {
-	// 	return oldRent, nil
-	// }
+
 	if lat != nil {
 		err = oldRent.Geopoint.UpdateLat(*lat)
 		if err != nil {
@@ -101,4 +99,15 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 		return nil, err
 	}
 	return updatedRent, nil
+}
+
+func (s *rentService) Delete(ctx context.Context, id uint64) error {
+	err := s.repo.Delete(ctx, id)
+	if err != nil {
+		if errors.Is(err, rent.ErrRentNotFound) {
+			return apperrors.Wrap(err, apperrors.ErrNotFound)
+		}
+		return err
+	}
+	return nil
 }
