@@ -395,3 +395,81 @@ func TestE2E_RentUpdate_Validation(t *testing.T) {
 		})
 	}
 }
+
+func httpDeleteRent(id int64) (*http.Response, error) {
+	request, err := http.NewRequest(
+		http.MethodDelete,
+		fmt.Sprintf("%s/%d", rentsAPI(), id),
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return httpClient.Do(request)
+}
+
+func TestE2E_RentDelete(t *testing.T) {
+	clearTables(t)
+
+	rent, err := addRent(validLat, validLong, validAddress, ptr(validInfo))
+	require.NoError(t, err)
+
+	resp1, err := httpDeleteRent(int64(rent.ID))
+	require.NoError(t, err)
+	defer resp1.Body.Close()
+
+	require.Equal(t, http.StatusNoContent, resp1.StatusCode)
+
+	resp2, err := httpGetRentByID(int64(rent.ID))
+	require.NoError(t, err)
+	defer resp2.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp2.StatusCode)
+}
+
+func TestE2E_RentDelete_NotFound(t *testing.T) {
+	clearTables(t)
+
+	resp, err := httpDeleteRent(1)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestE2E_RentDelete_Validation(t *testing.T) {
+	clearTables(t)
+
+	type testCase struct {
+		name string
+		id   string
+	}
+
+	tests := []testCase{
+		{
+			name: "Передача отрицательного",
+			id:   "-1",
+		},
+		{
+			name: "Передача строки вместо числа",
+			id:   "lol",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			request, err := http.NewRequest(
+				http.MethodDelete,
+				fmt.Sprintf("%s/%s", rentsAPI(), tc.id),
+				nil,
+			)
+			require.NoError(t, err)
+
+			resp, err := httpClient.Do(request)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	}
+}
