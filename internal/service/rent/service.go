@@ -111,3 +111,11 @@ func (s *rentService) Delete(ctx context.Context, id uint64) error {
 	}
 	return nil
 }
+
+func (s *rentService) Available(ctx context.Context, geopoint *model.GeoPoint, radius uint64) ([]model.Rent, error) {
+	results, err := s.repo.Available(ctx, geopoint, radius)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
