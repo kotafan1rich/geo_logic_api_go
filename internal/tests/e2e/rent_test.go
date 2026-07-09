@@ -346,3 +346,52 @@ func TestE2E_RentUpdate(t *testing.T) {
 		})
 	}
 }
+
+func TestE2E_RentUpdate_Validation(t *testing.T) {
+	clearTables(t)
+
+	type testCase struct {
+		name string
+		json string
+	}
+
+	tests := []testCase{
+		{
+			name: "Передача невалидного -lat",
+			json: `{"lat": -91,"long": 67,"address": "lol"}`,
+		},
+		{
+			name: "Передача невалидного +lat",
+			json: `{"lat": 91,"long": 67,"address": "lol"}`,
+		},
+		{
+			name: "Передача невалидного +long",
+			json: `{"lat": 67,"long": 181,"address": "lol"}`,
+		},
+		{
+			name: "Передача невалидного -long",
+			json: `{"lat": 67,"long": -181,"address": "lol"}`,
+		},
+		{
+			name: "Сломанный синтаксис JSON",
+			json: `{"lat": 0.0,"long`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			request, err := http.NewRequest(
+				http.MethodPatch,
+				fmt.Sprintf("%s/%d", rentsAPI(), 1),
+				bytes.NewBufferString(tc.json),
+			)
+			require.NoError(t, err)
+			request.Header.Set("Content-Type", "application/json")
+
+			resp, err := httpClient.Do(request)
+			require.NoError(t, err)
+
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	}
+}
