@@ -49,7 +49,7 @@ GeoLogicApi предоставляет REST API для:
 - `updated_at` — datetime
 
 
-### User_locations
+### Users_locations
 - `id` — PK
 - `user_id` — int (FK → Users.id)
 - `location_id` — int (FK → Locations.id)
@@ -79,7 +79,7 @@ GeoLogicApi предоставляет REST API для:
 
 ## Что планируется сделать
 
-- Добавить модели и репозитории для оставшихся сущностей: `Locations`, `Events`, `Infrastructure`, `User_locations`.
+- Добавить модели и репозитории для оставшихся сущностей: `Events`, `Infrastructure`, `Users_locations`.
 - Создать пространственные индексы `GIST` для высокопроизводительных гео-запросов.
 - Реализовать алгоритм расчёта рейтинга местности (агрегация близости инфраструктуры, событий, плотности и т.п.).
 - Добавить аутентификацию/авторизацию (если потребуется).
