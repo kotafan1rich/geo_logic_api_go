@@ -88,7 +88,7 @@ func (h *rentHandler) Delete(c *gin.Context) {
 
 func (h *rentHandler) Available(c *gin.Context) {
 	var req dto.AvailableRentRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
 		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
