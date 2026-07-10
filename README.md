@@ -1,63 +1,90 @@
-# GeoLogic API
+# GeoLogicApi
 
-Backend-сервис для хранения пользователей и объектов аренды с геокоординатами, а также для поиска доступных объектов рядом с заданной точкой.
+Backend-сервис для хранения пользователей, локаций, событий, аренды недвижимости и вычисления рейтинга местности при выборе места для открытия бизнеса.
 
 ## Кратко о проекте
 
-GeoLogic API предоставляет REST API для:
-- управления пользователями;
-- управления объектами аренды с координатами и описанием;
-- поиска объектов аренды в заданном радиусе вокруг точки с помощью PostGIS.
+GeoLogicApi предоставляет REST API для:
+- управления пользователями и их связями с локациями;
+- хранения объектов коммерческой аренды с геопривязкой;
+- хранения инфраструктуры города и ключевых точек притяжения;
+- регистрации событий, привязанных к точкам на карте;
+- расчёта и выдачи рейтинга местности для оценки привлекательности участка под бизнес.
 
-Архитектура приложения строится по слоям: handler → service → repository с DI и централизованной обработкой ошибок.
+Архитектура проекта строго ориентирована на принципы Clean Architecture / DDD: `handler` (транспорт) → `service` (бизнес-логика) → `repository` (данные) с управлением зависимостями через DI.
 
 ## Стек технологий
 
-- Go 1.26.1
-- Gin
-- GORM
-- PostgreSQL + PostGIS
-- log/slog
-- github.com/caarlos0/env + godotenv
-- testcontainers-go для e2e
-- stretchr/testify для тестов
+- Go (1.26.1)
+- Gin (HTTP-роутинг и валидация)
+- GORM (ORM)
+- PostgreSQL + PostGIS (хранение и индексация геоданных)
+- log/slog (структурированное логирование)
+- github.com/caarlos0/env + godotenv (конфигурация)
+- testcontainers-go (e2e-тестирование в изолированных контейнерах)
+- stretchr/testify (пакеты assert и require для тестирования)
 
-## Схема данных
+## Схема данных (план)
 
 ### Users
-- id — PK
-- tg_id — bigint, unique, not null
+- `id` — PK (uint64)
+- `tg_id` — int
+- `created_at` — datetime
+- `updated_at` — datetime
 
-### Rents
-- id — PK
-- location — geometry(Point, 4326)
-- address — varchar
-- info — varchar, nullable
+### Rents (Коммерческая аренда)
+- `id` — PK (uint64)
+- `location` — geometry(Point, 4326) [not null]
+- `address` — string (varchar 255)
+- `info` — string (varchar 255, nullable)
+- `created_at` — datetime
+- `updated_at` — datetime
+
+### Events
+- `id` — PK
+- `location` — geometry(Point, 4326)
+- `date` — datetime
+- `info` — string
+- `created_at` — datetime
+- `updated_at` — datetime
+
+
+### User_locations
+- `id` — PK
+- `user_id` — int (FK → Users.id)
+- `location_id` — int (FK → Locations.id)
+- `created_at` — datetime
+- `updated_at` — datetime
+
+### Infrastructure
+- `id` — PK
+- `location` — geometry(Point, 4326)
+- `address` — string
+- `type` — string
+- `info` — string
+- `created_at` — datetime
+- `updated_at` — datetime
 
 ## Что уже реализовано
 
-- Базовая структура приложения с разделением на internal/api, internal/handler, internal/service, internal/repository и internal/database.
-- CRUD для пользователей.
-- CRUD для объектов аренды.
-- Геопространственный поиск объектов аренды рядом с точкой через PostGIS.
-- Централизованная обработка ошибок и middleware для HTTP-ответов.
-- Логирование через slog.
-- E2E-тесты для пользователей, аренд и геопоиска.
-- OpenAPI-спецификация для текущего API.
+- **Базовая структура**: Архитектура проекта с разделением слоёв (`internal/api`, `internal/handler`, `internal/service`, `internal/repository`, `internal/database`).
+- **Пользователи**: Полный CRUD для пользователей (handler/service/repository) с автоматической миграцией.
+- **Коммерческая аренда (Rents)**: 
+  - Разработан безопасный PATCH-апдейт на указателях для частичного обновления данных.
+  - Реализован геопространственный поиск доступных объектов в радиусе с помощью функций PostGIS (`ST_DWithin` с кастингом в `geography`).
+  - Реализована строгая валидация входящих Query-параметров (координаты, ограничения радиуса) на уровне Gin Binding.
+- **Инфраструктура**: Подключение к PostgreSQL + PostGIS, централизованная модель ошибок (`internal/errors` → `AppError`) и middleware для ответов клиенту.
+- **Логирование**: Логирование запросов и SQL-операций через встроенный `internal/logger` (`slog`).
+- **Тестирование**: Мощное покрытие E2E-тестами (`testcontainers-go`). Написаны табличные тесты (Table-Driven Tests) для верификации успешных PATCH-обновлений, гео-поиска `Available`, а также негативные тесты на валидацию «грязных» данных и сломанного JSON.
 
-## Текущий API
+## Что планируется сделать
 
-Базовый путь приложения:
-- /api/users
-- /api/rents
-- /api/rents/available
-
-## Что планируется дальше
-
-- расширить модель домена и добавить новые сущности;
-- покрыть сервисы и репозитории unit-тестами;
-- улучшить OpenAPI и примеры запросов;
-- добавить авторизацию и дополнительные бизнес-правила.
+- Добавить модели и репозитории для оставшихся сущностей: `Locations`, `Events`, `Infrastructure`, `User_locations`.
+- Создать пространственные индексы `GIST` для высокопроизводительных гео-запросов.
+- Реализовать алгоритм расчёта рейтинга местности (агрегация близости инфраструктуры, событий, плотности и т.п.).
+- Добавить аутентификацию/авторизацию (если потребуется).
+- Расширить unit-тестирование бизнес-логики сервисов.
+- Подготовить API документацию (OpenAPI/Swagger).
 
 ## Конфигурация и запуск
 
@@ -66,19 +93,10 @@ GeoLogic API предоставляет REST API для:
 cp .env.template .env
 ```
 
-2. Настроить переменные окружения для базы данных, порта сервера и логирования.
+2. Настроить переменные в `.env` (DB, SERVER_PORT, LOG_LEVEL и т.п.).
 
-3. Запустить PostgreSQL с PostGIS:
+3. Запуск локально базы данных и приложения через `task`:
 ```bash
 task db:up
-```
-
-4. Запустить приложение:
-```bash
 task run
-```
-
-5. Запустить e2e-тесты:
-```bash
-go test -tags=e2e ./internal/tests/e2e
 ```
