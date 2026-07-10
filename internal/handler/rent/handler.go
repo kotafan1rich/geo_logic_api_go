@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
+	gendto "github.com/kotafan1rich/geo_logic_api_go/internal/handler/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
@@ -52,18 +53,26 @@ func (h *rentHandler) GetById(c *gin.Context) {
 }
 
 func (h *rentHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil || id == 0 {
-		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
-		return
-	}
-	var req dto.UpdateRentRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var reqUri gendto.IDUriRequest
+	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
 		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
-	updatedRent, err := h.service.Update(c.Request.Context(), id, req.Lat, req.Long, req.Address, req.Info)
+	var reqBody dto.UpdateRentRequest
+	if err := c.ShouldBindJSON(&reqBody); err != nil {
+		errDetails := handler.ParseValidationError(err)
+		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		return
+	}
+	updatedRent, err := h.service.Update(
+		c.Request.Context(),
+		reqUri.ID,
+		reqBody.Lat,
+		reqBody.Long,
+		reqBody.Address,
+		reqBody.Info,
+	)
 	if err != nil {
 		c.Error(err)
 		return
@@ -72,13 +81,14 @@ func (h *rentHandler) Update(c *gin.Context) {
 }
 
 func (h *rentHandler) Delete(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil || id == 0 {
-		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+	var reqUri gendto.IDUriRequest
+	if err := c.ShouldBindUri(&reqUri); err != nil {
+		errDetails := handler.ParseValidationError(err)
+		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	err = h.service.Delete(c.Request.Context(), id)
+	err := h.service.Delete(c.Request.Context(), reqUri.ID)
 	if err != nil {
 		c.Error(err)
 		return

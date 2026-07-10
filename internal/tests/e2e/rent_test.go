@@ -61,13 +61,13 @@ func TestE2E_RentAdd(t *testing.T) {
 	err = parseBody(resp1.Body, &createdRent1)
 	require.NoError(t, err)
 
-	assert.Equal(t, http.StatusCreated, resp1.StatusCode)
+	require.Equal(t, http.StatusCreated, resp1.StatusCode)
 	assert.Equal(t, validLat, createdRent1.Lat)
 	assert.Equal(t, validLong, createdRent1.Long)
 	assert.Equal(t, validAddress, createdRent1.Address)
 	assert.Equal(t, (*string)(nil), createdRent1.Info)
 
-	resp2, err := httpAddRent(validLat, validLong, validAddress, ptr(validInfo))
+	resp2, err := httpAddRent(validLat, validLong, validAddress, new(validInfo))
 	require.NoError(t, err)
 	defer resp2.Body.Close()
 
@@ -75,7 +75,7 @@ func TestE2E_RentAdd(t *testing.T) {
 	err = parseBody(resp2.Body, &createdRent2)
 	require.NoError(t, err)
 
-	assert.Equal(t, http.StatusCreated, resp2.StatusCode)
+	require.Equal(t, http.StatusCreated, resp2.StatusCode)
 	assert.Equal(t, validLat, createdRent2.Lat)
 	assert.Equal(t, validLong, createdRent2.Long)
 	assert.Equal(t, validAddress, createdRent2.Address)
@@ -143,7 +143,7 @@ func httpGetRentByID(id int64) (*http.Response, error) {
 
 func TestE2E_RentGetByID(t *testing.T) {
 	clearTables(t)
-	createdRent, err := addRent(validLat, validLong, validAddress, ptr(validInfo))
+	createdRent, err := addRent(validLat, validLong, validAddress, new(validInfo))
 	require.NoError(t, err)
 
 	resp, err := httpGetRentByID(int64(createdRent.ID))
@@ -233,98 +233,98 @@ func TestE2E_RentUpdate(t *testing.T) {
 		Lat:     validLat,
 		Long:    validLong,
 		Address: validAddress,
-		Info:    ptr(validInfo),
+		Info:    new(validInfo),
 	}
 
 	tests := []testCase{
 		{
 			name:             "Update lat",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Lat: ptr(1.0)},
-			expectedResponse: dto.RentResponse{Lat: 1.0, Long: validLong, Address: validAddress, Info: ptr(validInfo)},
+			request:          dto.UpdateRentRequest{Lat: new(1.0)},
+			expectedResponse: dto.RentResponse{Lat: 1.0, Long: validLong, Address: validAddress, Info: new(validInfo)},
 		},
 		{
 			name:             "Update long",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Long: ptr(1.0)},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: 1.0, Address: validAddress, Info: ptr(validInfo)},
+			request:          dto.UpdateRentRequest{Long: new(1.0)},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: 1.0, Address: validAddress, Info: new(validInfo)},
 		},
 		{
 			name:             "Update address",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Address: ptr("ll")},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: "ll", Info: ptr(validInfo)},
+			request:          dto.UpdateRentRequest{Address: new("ll")},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: "ll", Info: new(validInfo)},
 		},
 		{
 			name:             "Update info",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Info: ptr("ll")},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: ptr("ll")},
+			request:          dto.UpdateRentRequest{Info: new("ll")},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: new("ll")},
 		},
 		{
 			name:             "Update 2 params",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Lat: ptr(1.0), Long: ptr(2.0)},
-			expectedResponse: dto.RentResponse{Lat: 1.0, Long: 2.0, Address: validAddress, Info: ptr(validInfo)},
+			request:          dto.UpdateRentRequest{Lat: new(1.0), Long: new(2.0)},
+			expectedResponse: dto.RentResponse{Lat: 1.0, Long: 2.0, Address: validAddress, Info: new(validInfo)},
 		},
 		{
 			name:             "Update address with empty info",
 			baseRent:         dto.CreateRentRequest{Lat: validLat, Long: validLong, Address: validAddress},
-			request:          dto.UpdateRentRequest{Address: ptr("ll")},
+			request:          dto.UpdateRentRequest{Address: new("ll")},
 			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: "ll", Info: (*string)(nil)},
 		},
 		{
 			name:             "Update info with empty info",
 			baseRent:         dto.CreateRentRequest{Lat: validLat, Long: validLong, Address: validAddress},
-			request:          dto.UpdateRentRequest{Info: ptr("ll")},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: ptr("ll")},
+			request:          dto.UpdateRentRequest{Info: new("ll")},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: new("ll")},
 		},
 		{
 			name:             "Update lat to absolute zero",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Lat: ptr(0.0)}, // Раньше бы это поле проигнорировалось
-			expectedResponse: dto.RentResponse{Lat: 0.0, Long: validLong, Address: validAddress, Info: ptr(validInfo)},
+			request:          dto.UpdateRentRequest{Lat: new(0.0)}, // Раньше бы это поле проигнорировалось
+			expectedResponse: dto.RentResponse{Lat: 0.0, Long: validLong, Address: validAddress, Info: new(validInfo)},
 		},
 		{
 			name:             "Update long to absolute zero",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Long: ptr(0.0)},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: 0.0, Address: validAddress, Info: ptr(validInfo)},
+			request:          dto.UpdateRentRequest{Long: new(0.0)},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: 0.0, Address: validAddress, Info: new(validInfo)},
 		},
 		{
 			name:             "Update lat to max boundary (North Pole)",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Lat: ptr(90.0)},
-			expectedResponse: dto.RentResponse{Lat: 90.0, Long: validLong, Address: validAddress, Info: ptr(validInfo)},
+			request:          dto.UpdateRentRequest{Lat: new(90.0)},
+			expectedResponse: dto.RentResponse{Lat: 90.0, Long: validLong, Address: validAddress, Info: new(validInfo)},
 		},
 		{
 			name:             "Update long to max boundary",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Long: ptr(180.0)},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: 180.0, Address: validAddress, Info: ptr(validInfo)},
+			request:          dto.UpdateRentRequest{Long: new(180.0)},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: 180.0, Address: validAddress, Info: new(validInfo)},
 		},
 		{
 			name:     "Update absolutely all fields simultaneously",
 			baseRent: validRentRequest,
 			request: dto.UpdateRentRequest{
-				Lat:     ptr(45.5),
-				Long:    ptr(120.3),
-				Address: ptr("Новый проспект, дом 10"),
-				Info:    ptr("Вход со двора, код 44"),
+				Lat:     new(45.5),
+				Long:    new(120.3),
+				Address: new("Новый проспект, дом 10"),
+				Info:    new("Вход со двора, код 44"),
 			},
-			expectedResponse: dto.RentResponse{Lat: 45.5, Long: 120.3, Address: "Новый проспект, дом 10", Info: ptr("Вход со двора, код 44")},
+			expectedResponse: dto.RentResponse{Lat: 45.5, Long: 120.3, Address: "Новый проспект, дом 10", Info: new("Вход со двора, код 44")},
 		},
 		{
 			name:             "Empty patch request (no body fields sent)",
 			baseRent:         validRentRequest,
 			request:          dto.UpdateRentRequest{}, // Все поля внутри равны nil
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: ptr(validInfo)},
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: new(validInfo)},
 		},
 		{
 			name:             "Update info from text to empty string",
 			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Info: ptr("")}, // Затираем комментарий
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: ptr("")},
+			request:          dto.UpdateRentRequest{Info: new("")}, // Затираем комментарий
+			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: new("")},
 		},
 	}
 
@@ -357,7 +357,7 @@ func TestE2E_RentUpdate_NotFound(t *testing.T) {
 		Lat:     validLat,
 		Long:    validLong,
 		Address: validAddress,
-		Info:    ptr(validInfo),
+		Info:    new(validInfo),
 	}
 
 	resp, err := httpUpdateRent(1, validRentRequest)
@@ -432,7 +432,7 @@ func httpDeleteRent(id int64) (*http.Response, error) {
 func TestE2E_RentDelete(t *testing.T) {
 	clearTables(t)
 
-	rent, err := addRent(validLat, validLong, validAddress, ptr(validInfo))
+	rent, err := addRent(validLat, validLong, validAddress, new(validInfo))
 	require.NoError(t, err)
 
 	resp1, err := httpDeleteRent(int64(rent.ID))
@@ -505,11 +505,11 @@ func TestE2E_RentAvailable(t *testing.T) {
 
 	// 2. Создаем тестовые точки в базе данных через вашу функцию addRent
 	// Точка А: Близко к центру (в районе 3.5 км)
-	rentClose, err := addRent(59.9311, 30.3609, "Рядом с центром", ptr("Доступно"))
+	rentClose, err := addRent(59.9311, 30.3609, "Рядом с центром", new("Доступно"))
 	require.NoError(t, err)
 
 	// Точка Б: Очень далеко (Выборг, ~120 км)
-	_, err = addRent(60.7102, 28.7469, "Очень далеко", ptr("Доступно"))
+	_, err = addRent(60.7102, 28.7469, "Очень далеко", new("Доступно"))
 	require.NoError(t, err)
 
 	type testCase struct {
