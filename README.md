@@ -48,7 +48,6 @@ GeoLogicApi предоставляет REST API для:
 - `created_at` — datetime
 - `updated_at` — datetime
 
-
 ### Users_locations
 - `id` — PK
 - `user_id` — int (FK → Users.id)
