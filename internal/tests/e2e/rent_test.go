@@ -127,6 +127,7 @@ func TestE2E_RentAdd_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			resp, err := httpClient.Post(rentsAPI(), "application/json", bytes.NewBufferString(tc.json))
 			require.NoError(t, err)
 			defer resp.Body.Close()
@@ -190,6 +191,7 @@ func TestE2E_RentGetByID_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", rentsAPI(), tc.ID))
 			require.NoError(t, err)
 			defer resp.Body.Close()
@@ -328,6 +330,7 @@ func TestE2E_RentUpdate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			createdRent, err := addRent(tc.baseRent.Lat, tc.baseRent.Long, tc.baseRent.Address, tc.baseRent.Info)
 			require.NoError(t, err)
 			tc.expectedResponse.ID = createdRent.ID
@@ -397,6 +400,7 @@ func TestE2E_RentUpdate_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			request, err := http.NewRequest(
 				http.MethodPatch,
 				fmt.Sprintf("%s/%d", rentsAPI(), 1),
@@ -475,6 +479,7 @@ func TestE2E_RentDelete_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			request, err := http.NewRequest(
 				http.MethodDelete,
 				fmt.Sprintf("%s/%s", rentsAPI(), tc.id),
@@ -487,6 +492,143 @@ func TestE2E_RentDelete_Validation(t *testing.T) {
 			defer resp.Body.Close()
 
 			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	}
+}
+
+func TestE2E_RentAvailable(t *testing.T) {
+	clearTables(t) // Очищаем базу перед тестом
+
+	// 1. Координаты центра (например, центр Питера)
+	centerLat := 59.9398
+	centerLong := 30.3146
+
+	// 2. Создаем тестовые точки в базе данных через вашу функцию addRent
+	// Точка А: Близко к центру (в районе 3.5 км)
+	rentClose, err := addRent(59.9311, 30.3609, "Рядом с центром", ptr("Доступно"))
+	require.NoError(t, err)
+
+	// Точка Б: Очень далеко (Выборг, ~120 км)
+	_, err = addRent(60.7102, 28.7469, "Очень далеко", ptr("Доступно"))
+	require.NoError(t, err)
+
+	type testCase struct {
+		name          string
+		searchRadius  uint64
+		expectedCount int
+		expectID      uint64
+	}
+
+	tests := []testCase{
+		{
+			name:          "Маленький радиус (1 км) - ничего не должно найти",
+			searchRadius:  1000,
+			expectedCount: 0,
+		},
+		{
+			name:          "Средний радиус (5 км) - должен найти только близкую точку",
+			searchRadius:  5000,
+			expectedCount: 1,
+			expectID:      rentClose.ID,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			url := fmt.Sprintf("%s/available?lat=%f&long=%f&radius=%d",
+				rentsAPI(), centerLat, centerLong, tc.searchRadius,
+			)
+
+			resp, err := httpClient.Get(url)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			require.Equal(t, http.StatusOK, resp.StatusCode)
+
+			var foundRents []dto.RentResponse
+			err = parseBody(resp.Body, &foundRents)
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expectedCount, len(foundRents), "Количество найденных объектов не совпадает")
+
+			if tc.expectedCount == 1 {
+				assert.Equal(t, tc.expectID, foundRents[0].ID, "База вернула не тот объект")
+			}
+		})
+	}
+}
+
+func TestE2E_RentAvailable_Validation(t *testing.T) {
+	clearTables(t)
+
+	type testCase struct {
+		name        string
+		queryParams string
+	}
+
+	tests := []testCase{
+		{
+			name:        "Пропущена широта (lat)",
+			queryParams: "long=67.067&radius=5000",
+		},
+		{
+			name:        "Пропущена долгота (long)",
+			queryParams: "lat=67.067&radius=5000",
+		},
+		{
+			name:        "Невалидная широта (слишком большая)",
+			queryParams: "lat=91.0&long=67.067&radius=5000",
+		},
+		{
+			name:        "Невалидная широта (слишком маленькая)",
+			queryParams: "lat=-91.0&long=67.067&radius=5000",
+		},
+		{
+			name:        "Невалидная долгота (слишком большая)",
+			queryParams: "lat=67.067&long=181.0&radius=5000",
+		},
+		{
+			name:        "Невалидная долгота (слишком маленькая)",
+			queryParams: "lat=67.067&long=-181.0&radius=5000",
+		},
+		{
+			name:        "Вместо чисел переданы буквы в lat",
+			queryParams: "lat=not_a_number&long=67.067&radius=5000",
+		},
+		{
+			name:        "Вместо чисел переданы буквы в long",
+			queryParams: "lat=67.067&long=text&radius=5000",
+		},
+		{
+			name:        "Радиус равен нулю (нарушение бизнес-логики сервиса)",
+			queryParams: "lat=67.067&long=67.067&radius=0",
+		},
+		{
+			name:        "Радиус больше максимального (например, maxRadius = 65000, передаем 70000)",
+			queryParams: "lat=67.067&long=67.067&radius=70000",
+		},
+		{
+			name:        "Передан отрицательный радиус (uint16 сломается при парсинге)",
+			queryParams: "lat=67.067&long=67.067&radius=-100",
+		},
+		{
+			name:        "Вместо числа в радиус переданы буквы",
+			queryParams: "lat=67.067&long=67.067&radius=kilometers",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			url := fmt.Sprintf("%s/available?%s", rentsAPI(), tc.queryParams)
+
+			resp, err := httpClient.Get(url)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode,
+				"Для кейса '%s' ожидался статус 400, но сервер вернул %d", tc.name, resp.StatusCode)
 		})
 	}
 }
