@@ -1,81 +1,63 @@
-# GeoLogicApi
+# GeoLogic API
 
-Backend-сервис для хранения пользователей, локаций, событий и вычисления рейтинга местности при выборе места для открытия бизнеса.
+Backend-сервис для хранения пользователей и объектов аренды с геокоординатами, а также для поиска доступных объектов рядом с заданной точкой.
 
 ## Кратко о проекте
 
-GeoLogicApi предоставляет REST API для:
-- хранения пользователей и их связей с локациями;
-- хранения локаций и инфраструктуры (с геокоординатами);
-- регистрации событий, привязанных к точкам на карте;
-- расчёта и выдачи рейтинга местности для оценки привлекательности участка под бизнес.
+GeoLogic API предоставляет REST API для:
+- управления пользователями;
+- управления объектами аренды с координатами и описанием;
+- поиска объектов аренды в заданном радиусе вокруг точки с помощью PostGIS.
 
-Архитектура ориентирована на DDD: `handler` → `service` → `repository` с DI
+Архитектура приложения строится по слоям: handler → service → repository с DI и централизованной обработкой ошибок.
 
 ## Стек технологий
 
-- Go (1.26.1)
-- Gin (HTTP)
-- GORM (ORM)
-- PostgreSQL + PostGIS (геоданные)
-- log/slog (логирование)
-- github.com/caarlos0/env + godotenv (конфигурация)
-- testcontainers-go (e2e)
-- stretchr/testify (assertions)
+- Go 1.26.1
+- Gin
+- GORM
+- PostgreSQL + PostGIS
+- log/slog
+- github.com/caarlos0/env + godotenv
+- testcontainers-go для e2e
+- stretchr/testify для тестов
 
-## Схема данных (план)
+## Схема данных
 
 ### Users
-- `id` — PK
-- `tg_id` — int
+- id — PK
+- tg_id — bigint, unique, not null
 
-### Events
-- `id` — PK
-- `latitude` — geography
-- `longitude` — geography
-- `date` — datetime
-- `info` — string
-
-### Locations
-- `id` — PK
-- `latitude` — geography
-- `longitude` — geography
-- `address` — string
-- `type` — string
-- `info` — string
-
-### User_locations
-- `id` — PK
-- `user_id` — int (FK → Users.id)
-- `location_id` — int (FK → Locations.id)
-
-### Infrastructure
-- `id` — PK
-- `latitude` — geography
-- `longitude` — geography
-- `address` — string
-- `type` — string
-- `info` — string
+### Rents
+- id — PK
+- location — geometry(Point, 4326)
+- address — varchar
+- info — varchar, nullable
 
 ## Что уже реализовано
 
-- Базовая структура проекта с разделением слоёв (`internal/api`, `internal/handler`, `internal/service`, `internal/repository`, `internal/database`).
-- CRUD для пользователей (handler/service/repository).
-- Подключение к PostgreSQL + PostGIS, автоматическая миграция модели пользователя.
-- Централизованная модель ошибок (`internal/errors` → `AppError`) и middleware для ответа клиенту.
-- Логирование запросов через `internal/logger`.
-- E2E-тесты с `testcontainers-go` (контейнер Postgres).
+- Базовая структура приложения с разделением на internal/api, internal/handler, internal/service, internal/repository и internal/database.
+- CRUD для пользователей.
+- CRUD для объектов аренды.
+- Геопространственный поиск объектов аренды рядом с точкой через PostGIS.
+- Централизованная обработка ошибок и middleware для HTTP-ответов.
+- Логирование через slog.
+- E2E-тесты для пользователей, аренд и геопоиска.
+- OpenAPI-спецификация для текущего API.
 
-## Что планируется сделать
+## Текущий API
 
-- Добавить модели и репозитории для `Locations`, `Events`, `Infrastructure`, `User_locations`.
-- Реализовать геопространственные запросы с использованием PostGIS
-- Реализовать алгоритм расчёта рейтинга местности (агрегация близости инфраструктуры, событий, плотности и т.п.).
-- Добавить аутентификацию/авторизацию (если потребуется).
-- Написать unit-тесты для сервиса и репозиториев, расширить интеграционные тесты.
-- Сделать API документацию (OpenAPI/Swagger).
+Базовый путь приложения:
+- /api/users
+- /api/rents
+- /api/rents/available
 
+## Что планируется дальше
 
+- расширить модель домена и добавить новые сущности;
+- покрыть сервисы и репозитории unit-тестами;
+- улучшить OpenAPI и примеры запросов;
+- добавить авторизацию и дополнительные бизнес-правила.
 
 ## Конфигурация и запуск
 
@@ -84,10 +66,19 @@ GeoLogicApi предоставляет REST API для:
 cp .env.template .env
 ```
 
-2. Настроить переменные в .env (DB, SERVER_PORT, LOG_LEVEL и т.п.).
+2. Настроить переменные окружения для базы данных, порта сервера и логирования.
 
-3. Запуск локально через докер и task:
+3. Запустить PostgreSQL с PostGIS:
 ```bash
 task db:up
+```
+
+4. Запустить приложение:
+```bash
 task run
+```
+
+5. Запустить e2e-тесты:
+```bash
+go test -tags=e2e ./internal/tests/e2e
 ```

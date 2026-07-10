@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
-  title: User API
-  description: API для управления пользователями на основе фреймворка Gin.
-  version: 1.0.0
+  title: GeoLogic API
+  description: REST API для управления пользователями и объектами аренды с геопространственным поиском.
+  version: 0.2.0
 
 servers:
-  - url: /api/v1
-    description: Base URL for API version 1
+  - url: /api
+    description: Current API base path
 
 paths:
   /users:
@@ -142,7 +142,7 @@ paths:
         '409':
           description: Conflict error when trying to create a rents that already exists
 
-  /rents/available/:
+  /rents/available:
     get:
       summary: Get available rents in the specified area
       operationId: getAvailableRents
