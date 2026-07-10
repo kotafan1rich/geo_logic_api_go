@@ -94,6 +94,7 @@ func TestE2E_UserAdd_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			resp, err := httpClient.Post(
 				usersAPI(),
 				"application/json",
@@ -171,6 +172,7 @@ func TestE2E_UserGetByID_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", usersAPI(), tc.tgId))
 			require.NoError(t, err)
 			defer resp.Body.Close()
@@ -284,6 +286,7 @@ func TestE2E_UserUpdate_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			request, err := http.NewRequest(
 				http.MethodPatch,
 				fmt.Sprintf("%s/%s", usersAPI(), tc.id),
@@ -364,6 +367,7 @@ func TestE2E_UserDelete_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			request, err := http.NewRequest(
 				http.MethodDelete,
 				fmt.Sprintf("%s/%s", usersAPI(), tc.id),
