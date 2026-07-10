@@ -11,12 +11,17 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
-type userHandler struct {
-	service service.UserService
+type Logger interface {
+	Error(msg string, args ...any)
 }
 
-func NewHandler(service service.UserService) *userHandler {
-	return &userHandler{service: service}
+type userHandler struct {
+	service service.UserService
+	log     Logger
+}
+
+func NewHandler(service service.UserService, log Logger) *userHandler {
+	return &userHandler{service: service, log: log}
 }
 
 func (h *userHandler) Create(c *gin.Context) {

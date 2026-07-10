@@ -83,8 +83,8 @@ func (d *diContainer) RentService() service.RentService {
 
 func (d *diContainer) Handler() api.Handler {
 	if d.handler == nil {
-		userHandler := user.NewHandler(d.UserService())
-		rentHandler := rent.NewHandler(d.RentService())
+		userHandler := user.NewHandler(d.UserService(), d.Logger())
+		rentHandler := rent.NewHandler(d.RentService(), d.Logger())
 		d.handler = api.NewMainHandler(d.Logger(), userHandler, rentHandler)
 	}
 
