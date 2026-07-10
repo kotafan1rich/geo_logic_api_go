@@ -41,7 +41,7 @@ func (g *GeoPoint) UpdateLat(lat float64) error {
 
 func (g *GeoPoint) UpdateLong(long float64) error {
 	if !validateLong(long) {
-		return errors.ErrInvalidLat
+		return errors.ErrInvalidLong
 	}
 	g.Long = long
 	return nil
