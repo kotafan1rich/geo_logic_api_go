@@ -1,10 +1,11 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
+	apperror "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 )
 
@@ -15,28 +16,31 @@ func ErrorHandlerMiddleware(log logger.Logger) gin.HandlerFunc {
 		if len(c.Errors) > 0 {
 			err := c.Errors.Last().Err
 
-			switch e := err.(type) {
-			case *errors.AppError:
-				log.Warn("application error", "error", e)
-				c.JSON(e.Status, e)
-			case *gin.Error:
-				if e.Type == gin.ErrorTypeBind {
-					log.Warn("validation error", "error", e)
+			if appErr, ok := errors.AsType[*apperror.AppError](err); ok {
+				log.Warn("application error", "error", appErr)
+				c.JSON(appErr.Status, appErr)
+				c.Errors = nil
+				return
+			}
+			if appErr, ok := errors.AsType[*gin.Error](err); ok {
+				if appErr.Type == gin.ErrorTypeBind {
+					log.Warn("validation error", "error", appErr)
 					c.JSON(http.StatusBadRequest, gin.H{
 						"success": false,
 						"error":   "Validation failed",
 						"code":    "VALIDATION_ERROR",
-						"details": e.Error(),
+						"details": appErr.Error(),
 					})
 				} else {
-					log.LogError(c.Request.Context(), e, "internal error")
-					c.JSON(errors.ErrInternal.Status, errors.ErrInternal)
+					log.LogError(c.Request.Context(), appErr, "internal error")
+					c.JSON(apperror.ErrInternal.Status, apperror.ErrInternal)
 				}
-			default:
-				log.LogError(c.Request.Context(), e, "internal error")
-				c.JSON(errors.ErrInternal.Status, errors.ErrInternal)
-
+				c.Errors = nil
+				return
 			}
+			log.LogError(c.Request.Context(), err, "internal error")
+			c.JSON(apperror.ErrInternal.Status, apperror.ErrInternal)
+
 			c.Errors = nil
 		}
 	}

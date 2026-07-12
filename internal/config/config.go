@@ -44,11 +44,14 @@ type Config struct {
 var config *Config
 
 func MustLoad() {
-	_ = godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		slog.Warn("No .env file found, using environment variables")
+	}
 
 	cfg := &Config{}
 
-	err := env.Parse(cfg)
+	err = env.Parse(cfg)
 	if err != nil {
 		slog.Error("error load config", "err", err)
 		panic(err)

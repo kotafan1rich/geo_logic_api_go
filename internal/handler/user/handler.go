@@ -28,13 +28,13 @@ func (h *userHandler) Create(c *gin.Context) {
 	var req dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
 	user, err := h.service.Create(c.Request.Context(), req.TgID)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -45,13 +45,13 @@ func (h *userHandler) GetById(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
 	user, err := h.service.GetById(c.Request.Context(), reqUri.ID)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, dto.ToUserResponse(user))
@@ -61,19 +61,19 @@ func (h *userHandler) Update(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 	var reqBody dto.UpdateUserRequest
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
 	user, err := h.service.Update(c.Request.Context(), reqUri.ID, reqBody.TgID)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, dto.ToUserResponse(user))
@@ -83,13 +83,13 @@ func (h *userHandler) Delete(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
-		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
+		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
 	err := h.service.Delete(c.Request.Context(), reqUri.ID)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)

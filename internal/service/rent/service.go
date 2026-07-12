@@ -102,7 +102,11 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 	}
 
 	if address != nil {
-		oldRent.UpdateAddress(*address)
+		err = oldRent.UpdateAddress(*address)
+		if err != nil {
+			s.log.Warn("validation error", "error", err)
+			return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
+		}
 	}
 
 	if info != nil {

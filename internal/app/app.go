@@ -55,7 +55,11 @@ func (a *App) closeDB() error {
 		return err
 	}
 
-	sqlDB.Close()
+	err = sqlDB.Close()
+	if err != nil {
+		slog.Error("failed to close database connection cleanly", "err", err)
+		return err
+	}
 	slog.Info("db is closed")
 	return nil
 }
