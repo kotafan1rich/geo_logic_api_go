@@ -54,7 +54,7 @@ func (s *userService) GetById(ctx context.Context, id uint64) (*model.User, erro
 	return result, nil
 }
 
-func (s *userService) Update(ctx context.Context, id uint64, newTgId uint64) (*model.User, error) {
+func (s *userService) Update(ctx context.Context, id, newTgId uint64) (*model.User, error) {
 	oldUser, err := s.GetById(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {

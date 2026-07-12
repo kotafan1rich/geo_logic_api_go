@@ -52,7 +52,6 @@ func TestMain(m *testing.M) {
 				WithStartupTimeout(15*time.Second),
 		),
 	)
-
 	if err != nil {
 		log.Fatalf("Не удалось запустить postgres в docker: %s", err)
 	}

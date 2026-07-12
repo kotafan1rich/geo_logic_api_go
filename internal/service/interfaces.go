@@ -9,7 +9,7 @@ import (
 type UserService interface {
 	Create(ctx context.Context, tgId uint64) (*model.User, error)
 	GetById(ctx context.Context, id uint64) (*model.User, error)
-	Update(ctx context.Context, id uint64, newTgId uint64) (*model.User, error)
+	Update(ctx context.Context, id, newTgId uint64) (*model.User, error)
 	Delete(ctx context.Context, id uint64) error
 }
 

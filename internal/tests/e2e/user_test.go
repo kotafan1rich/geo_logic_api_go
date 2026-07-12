@@ -301,7 +301,6 @@ func TestE2E_UserUpdate_Validation(t *testing.T) {
 			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 		})
 	}
-
 }
 
 func httpDeleteUser(id int64) (*http.Response, error) {

@@ -40,7 +40,6 @@ func (d *diContainer) DB() database.DB {
 		cfg := config.Get()
 
 		db, err := database.New(cfg.Database.DSN(), cfg.Database.MaxIdleConns, cfg.Database.MaxOpenConns)
-
 		if err != nil {
 			d.Logger().Error("failed to connect to db", "err", err)
 			os.Exit(1)

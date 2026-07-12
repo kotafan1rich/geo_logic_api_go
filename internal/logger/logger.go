@@ -98,6 +98,7 @@ func (l *logger) Info(msg string, args ...any) {
 func (l *logger) Warn(msg string, args ...any) {
 	l.Logger.Warn(msg, args...)
 }
+
 func (l *logger) Error(msg string, args ...any) {
 	l.Logger.Error(msg, args...)
 }
@@ -122,7 +123,8 @@ func (l *logger) WithRequest(status int, method, path, query, ip, userAgent stri
 			slog.String("ip", ip),
 			slog.String("user-agent", userAgent),
 			slog.Duration("latency", latency),
-		)}
+		),
+	}
 }
 
 func (l *logger) LogError(ctx context.Context, err error, message string) {

@@ -12,7 +12,6 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
-
 type rentHandler struct {
 	service service.RentService
 }
