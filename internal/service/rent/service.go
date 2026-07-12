@@ -16,6 +16,8 @@ const (
 )
 
 type Logger interface {
+	Info(msg string, args ...any)
+	Warn(msg string, args ...any)
 	Error(msg string, args ...any)
 }
 
@@ -32,8 +34,10 @@ func (s *rentService) Create(ctx context.Context, lat, long float64, address str
 	geopoint, err := model.NewGeoPoint(lat, long)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidLat) || errors.Is(err, apperrors.ErrInvalidLong) {
+			s.log.Warn("validation error", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 		}
+		s.log.Error("error creating rent", "error", err)
 		return nil, err
 	}
 	rentToCreate := model.NewRent(geopoint, address, info)
@@ -41,11 +45,12 @@ func (s *rentService) Create(ctx context.Context, lat, long float64, address str
 	createdRent, err := s.repo.Create(ctx, rentToCreate)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentAlreadyExists) {
+			s.log.Warn("error creating rent", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrConflict)
 		}
+		s.log.Error("error creating rent", "error", err)
 		return nil, err
 	}
-
 	return createdRent, nil
 }
 
@@ -53,8 +58,10 @@ func (s *rentService) GetById(ctx context.Context, id uint64) (*model.Rent, erro
 	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentNotFound) {
+			s.log.Warn("rent not found", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
+		s.log.Error("error getting rent", "error", err)
 		return nil, err
 	}
 	return result, nil
@@ -64,8 +71,10 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 	oldRent, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentNotFound) {
+			s.log.Warn("rent not found", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
+		s.log.Error("error getting rent", "error", err)
 		return nil, err
 	}
 
@@ -73,8 +82,10 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 		err = oldRent.Geopoint.UpdateLat(*lat)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidLat) {
+				s.log.Warn("validation error", "error", err)
 				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 			}
+			s.log.Error("error updating rent", "error", err)
 			return nil, err
 		}
 	}
@@ -82,8 +93,10 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 		err = oldRent.Geopoint.UpdateLong(*long)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidLong) {
+				s.log.Warn("validation error", "error", err)
 				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 			}
+			s.log.Error("error updating rent", "error", err)
 			return nil, err
 		}
 	}
@@ -99,8 +112,10 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 	updatedRent, err := s.repo.Update(ctx, oldRent)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentAlreadyExists) {
+			s.log.Warn("error updating rent", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrConflict)
 		}
+		s.log.Error("error updating rent", "error", err)
 		return nil, err
 	}
 	return updatedRent, nil
@@ -110,8 +125,10 @@ func (s *rentService) Delete(ctx context.Context, id uint64) error {
 	err := s.repo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentNotFound) {
+			s.log.Warn("rent not found", "error", err)
 			return apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
+		s.log.Error("error deleting rent", "error", err)
 		return err
 	}
 	return nil
@@ -124,11 +141,13 @@ func (s *rentService) Available(ctx context.Context, geopoint *model.GeoPoint, r
 	} else {
 		finalRadius = *radius
 		if finalRadius == 0 || finalRadius > maxRadius {
+			s.log.Warn("invalid radius", "error", apperrors.ErrInvalidRadius)
 			return nil, apperrors.Wrap(apperrors.ErrInvalidRadius, apperrors.ValidationError(apperrors.ErrInvalidRadius.Error()))
 		}
 	}
 	results, err := s.repo.Available(ctx, geopoint, finalRadius)
 	if err != nil {
+		s.log.Error("error getting available rents", "error", err)
 		return nil, err
 	}
 	return results, nil

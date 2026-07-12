@@ -2,7 +2,6 @@ package rent
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
@@ -13,17 +12,13 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
-type Logger interface {
-	Error(msg string, args ...any)
-}
 
 type rentHandler struct {
 	service service.RentService
-	log  Logger
 }
 
-func NewHandler(service service.RentService, log Logger) *rentHandler {
-	return &rentHandler{service: service, log: log}
+func NewHandler(service service.RentService) *rentHandler {
+	return &rentHandler{service: service}
 }
 
 func (h *rentHandler) Create(c *gin.Context) {
@@ -43,13 +38,14 @@ func (h *rentHandler) Create(c *gin.Context) {
 }
 
 func (h *rentHandler) GetById(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil || id == 0 {
-		c.Error(errors.ValidationError("id must be greater then 0")).SetType(gin.ErrorTypeBind)
+	var reqUri gendto.IDUriRequest
+	if err := c.ShouldBindUri(&reqUri); err != nil {
+		errDetails := handler.ParseValidationError(err)
+		c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	rent, err := h.service.GetById(c.Request.Context(), id)
+	rent, err := h.service.GetById(c.Request.Context(), reqUri.ID)
 	if err != nil {
 		c.Error(err)
 		return

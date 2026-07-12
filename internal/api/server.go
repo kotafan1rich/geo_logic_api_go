@@ -3,24 +3,21 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/middleware"
 )
-
-type Logger interface {
-	GinLoggerMiddleware() gin.HandlerFunc
-}
 
 type Handler interface {
 	Routes() *gin.Engine
 }
 
 type mainHandler struct {
-	log         Logger
+	log         logger.Logger
 	userHandler handler.UserHandler
 	rentHandler handler.RentHandler
 }
 
-func NewMainHandler(log Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler) Handler {
+func NewMainHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler) Handler {
 	return &mainHandler{log: log, userHandler: userHandler, rentHandler: rentHandler}
 }
 
@@ -29,8 +26,8 @@ func (h *mainHandler) Routes() *gin.Engine {
 
 	router.Use(
 		gin.Recovery(),
-		h.log.GinLoggerMiddleware(),
-		middleware.ErrorHandlerMiddleware(),
+		middleware.GinLoggerMiddleware(h.log),
+		middleware.ErrorHandlerMiddleware(h.log),
 	)
 
 	api := router.Group("/api")

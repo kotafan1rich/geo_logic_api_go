@@ -7,8 +7,6 @@ import (
 	"os"
 	"runtime"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 type Logger interface {
@@ -20,8 +18,6 @@ type Logger interface {
 	WithLatency(latency time.Duration) Logger
 	WithRequest(status int, method, path, query, ip, userAgent string, latency time.Duration) Logger
 	LogError(ctx context.Context, err error, message string)
-
-	GinLoggerMiddleware() gin.HandlerFunc
 }
 
 type logger struct {
