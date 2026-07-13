@@ -1,6 +1,7 @@
 package dbmodel
 
 import (
+	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 )
 
@@ -23,7 +24,7 @@ func ToRentSlice(rents []Rent) []model.Rent {
 
 func ToRentModel(rent *model.Rent) *Rent {
 	res := &Rent{
-		Location: DBGeoPoint(*rent.Geopoint),
+		Location: database.DBGeoPoint(*rent.Geopoint),
 		Address:  rent.Address,
 		Info:     rent.Info,
 	}
