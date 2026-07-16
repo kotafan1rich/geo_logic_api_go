@@ -6,13 +6,16 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/api"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/event"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
+	eventrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/event"
 	rentrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent"
 	userrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
+	eventservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/event"
 	rentservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/rent"
 	userservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/user"
 )
@@ -20,11 +23,13 @@ import (
 type diContainer struct {
 	db database.DB
 
-	userRepo repository.UserRepository
-	rentRepo repository.RentRepository
+	userRepo  repository.UserRepository
+	rentRepo  repository.RentRepository
+	eventRepo repository.EventRepository
 
-	userService service.UserService
-	rentService service.RentService
+	userService  service.UserService
+	rentService  service.RentService
+	eventService service.EventService
 
 	handler api.Handler
 
@@ -65,6 +70,14 @@ func (d *diContainer) RentRepo() repository.RentRepository {
 	return d.rentRepo
 }
 
+func (d *diContainer) EventRepo() repository.EventRepository {
+	if d.eventRepo == nil {
+		d.eventRepo = eventrepo.NewRepository(d.DB())
+	}
+
+	return d.eventRepo
+}
+
 func (d *diContainer) UserService() service.UserService {
 	if d.userService == nil {
 		d.userService = userservice.NewUserService(d.Logger(), d.UserRepo())
@@ -80,11 +93,19 @@ func (d *diContainer) RentService() service.RentService {
 	return d.rentService
 }
 
+func (d *diContainer) EventService() service.EventService {
+	if d.eventService == nil {
+		d.eventService = eventservice.NewEventService(d.Logger(), d.EventRepo())
+	}
+	return d.eventService
+}
+
 func (d *diContainer) Handler() api.Handler {
 	if d.handler == nil {
-		userHandler := user.NewHandler(d.UserService(), d.Logger())
+		userHandler := user.NewHandler(d.UserService())
 		rentHandler := rent.NewHandler(d.RentService())
-		d.handler = api.NewMainHandler(d.Logger(), userHandler, rentHandler)
+		eventHandler := event.NewHandler(d.EventService())
+		d.handler = api.NewMainHandler(d.Logger(), userHandler, rentHandler, eventHandler)
 	}
 
 	return d.handler

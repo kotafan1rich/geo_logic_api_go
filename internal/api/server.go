@@ -12,12 +12,13 @@ type Handler interface {
 }
 
 type mainHandler struct {
-	log         logger.Logger
-	userHandler handler.UserHandler
-	rentHandler handler.RentHandler
+	log          logger.Logger
+	userHandler  handler.UserHandler
+	rentHandler  handler.RentHandler
+	eventHandler handler.EventHandler
 }
 
-func NewMainHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler) Handler {
+func NewMainHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler, eventHandler handler.EventHandler) Handler {
 	return &mainHandler{log: log, userHandler: userHandler, rentHandler: rentHandler}
 }
 
@@ -32,7 +33,7 @@ func (h *mainHandler) Routes() *gin.Engine {
 
 	api := router.Group("/api")
 
-	handler.RegisterRoutes(api, h.userHandler, h.rentHandler)
+	handler.RegisterRoutes(api, h.userHandler, h.rentHandler, h.eventHandler)
 
 	return router
 }

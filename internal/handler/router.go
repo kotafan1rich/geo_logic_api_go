@@ -17,7 +17,15 @@ type RentHandler interface {
 	Available(c *gin.Context)
 }
 
-func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler) {
+type EventHandler interface {
+	Create(c *gin.Context)
+	GetById(c *gin.Context)
+	Update(c *gin.Context)
+	Delete(c *gin.Context)
+	Near(c *gin.Context)
+}
+
+func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler) {
 	user := router.Group("/users")
 	{
 		user.POST("/", userHandler.Create)
@@ -33,5 +41,14 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 		rent.PATCH("/:id", rentHandler.Update)
 		rent.DELETE("/:id", rentHandler.Delete)
 		rent.GET("/available", rentHandler.Available)
+	}
+
+	event := router.Group("/events")
+	{
+		event.POST("/", eventHandler.Create)
+		event.GET("/:id", eventHandler.GetById)
+		event.PATCH("/:id", eventHandler.Update)
+		event.DELETE("/:id", eventHandler.Delete)
+		event.GET("/available", eventHandler.Near)
 	}
 }
