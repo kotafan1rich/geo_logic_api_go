@@ -125,7 +125,6 @@ func TestE2E_EventAdd_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			resp, err := httpClient.Post(eventsAPI(), "application/json", bytes.NewBufferString(tc.json))
 			require.NoError(t, err)
 			defer resp.Body.Close()
@@ -189,7 +188,6 @@ func TestE2E_EventGetByID_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", eventsAPI(), tc.ID))
 			require.NoError(t, err)
 			defer resp.Body.Close()
@@ -328,7 +326,6 @@ func TestE2E_EventUpdate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			createdEvent, err := addEvent(tc.baseEvent.Lat, tc.baseEvent.Long, tc.baseEvent.Date, tc.baseEvent.Info)
 			require.NoError(t, err)
 			tc.expectedResponse.ID = createdEvent.ID
@@ -398,7 +395,6 @@ func TestE2E_EventUpdate_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			request, err := http.NewRequest(
 				http.MethodPatch,
 				fmt.Sprintf("%s/%d", eventsAPI(), 1),
@@ -477,7 +473,6 @@ func TestE2E_EventDelete_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			request, err := http.NewRequest(
 				http.MethodDelete,
 				fmt.Sprintf("%s/%s", eventsAPI(), tc.id),
@@ -533,7 +528,6 @@ func TestE2E_EventAvailable(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			url := fmt.Sprintf("%s/available?lat=%f&long=%f&radius=%d",
 				eventsAPI(), centerLat, centerLong, tc.searchRadius,
 			)
@@ -618,7 +612,6 @@ func TestE2E_EventAvailable_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			url := fmt.Sprintf("%s/available?%s", eventsAPI(), tc.queryParams)
 
 			resp, err := httpClient.Get(url)
