@@ -8,20 +8,21 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent/dto"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/event/dto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const validAddress = "lol"
+var validDate = time.Date(2026, time.July, 16, 12, 0, 0, 0, time.UTC)
 
-func httpAddRent(lat, long float64, address string, info *string) (*http.Response, error) {
-	payload := dto.CreateRentRequest{
-		Lat:     lat,
-		Long:    long,
-		Address: address,
-		Info:    info,
+func httpAddEvent(lat, long float64, date time.Time, info *string) (*http.Response, error) {
+	payload := dto.CreateEventRequest{
+		Lat:  lat,
+		Long: long,
+		Date: date,
+		Info: info,
 	}
 
 	jsonBytes, err := json.Marshal(payload)
@@ -29,57 +30,57 @@ func httpAddRent(lat, long float64, address string, info *string) (*http.Respons
 		return nil, err
 	}
 
-	return httpClient.Post(rentsAPI(), "application/json", bytes.NewBuffer(jsonBytes))
+	return httpClient.Post(eventsAPI(), "application/json", bytes.NewBuffer(jsonBytes))
 }
 
-func addRent(lat, long float64, address string, info *string) (*dto.RentResponse, error) {
-	resp, err := httpAddRent(lat, long, address, info)
+func addEvent(lat, long float64, date time.Time, info *string) (*dto.EventResponse, error) {
+	resp, err := httpAddEvent(lat, long, date, info)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	var createdRent dto.RentResponse
-	err = parseBody(resp.Body, &createdRent)
+	var createdEvent dto.EventResponse
+	err = parseBody(resp.Body, &createdEvent)
 	if err != nil {
 		return nil, err
 	}
-	return &createdRent, nil
+	return &createdEvent, nil
 }
 
-func TestE2E_RentAdd(t *testing.T) {
+func TestE2E_EventAdd(t *testing.T) {
 	clearTables(t)
 
-	resp1, err := httpAddRent(validLat, validLong, validAddress, nil)
+	resp1, err := httpAddEvent(validLat, validLong, validDate, nil)
 	require.NoError(t, err)
 	defer resp1.Body.Close()
 
-	var createdRent1 dto.RentResponse
-	err = parseBody(resp1.Body, &createdRent1)
+	var createdEvent1 dto.EventResponse
+	err = parseBody(resp1.Body, &createdEvent1)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusCreated, resp1.StatusCode)
-	assert.Equal(t, validLat, createdRent1.Lat)
-	assert.Equal(t, validLong, createdRent1.Long)
-	assert.Equal(t, validAddress, createdRent1.Address)
-	assert.Equal(t, (*string)(nil), createdRent1.Info)
+	assert.Equal(t, validLat, createdEvent1.Lat)
+	assert.Equal(t, validLong, createdEvent1.Long)
+	assert.Equal(t, validDate, createdEvent1.Date)
+	assert.Equal(t, (*string)(nil), createdEvent1.Info)
 
-	resp2, err := httpAddRent(validLat, validLong, validAddress, new(validInfo))
+	resp2, err := httpAddEvent(validLat, validLong, validDate, new(validInfo))
 	require.NoError(t, err)
 	defer resp2.Body.Close()
 
-	var createdRent2 dto.RentResponse
-	err = parseBody(resp2.Body, &createdRent2)
+	var createdEvent2 dto.EventResponse
+	err = parseBody(resp2.Body, &createdEvent2)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusCreated, resp2.StatusCode)
-	assert.Equal(t, validLat, createdRent2.Lat)
-	assert.Equal(t, validLong, createdRent2.Long)
-	assert.Equal(t, validAddress, createdRent2.Address)
-	assert.Equal(t, validInfo, *createdRent2.Info)
+	assert.Equal(t, validLat, createdEvent2.Lat)
+	assert.Equal(t, validLong, createdEvent2.Long)
+	assert.Equal(t, validDate, createdEvent2.Date)
+	assert.Equal(t, validInfo, *createdEvent2.Info)
 }
 
-func TestE2E_RentAdd_Validation(t *testing.T) {
+func TestE2E_EventAdd_Validation(t *testing.T) {
 	clearTables(t)
 
 	type testCase struct {
@@ -90,30 +91,30 @@ func TestE2E_RentAdd_Validation(t *testing.T) {
 	tests := []testCase{
 		{
 			name: "Передача невалидного -lat",
-			json: `{"lat": -91,"long": 67,"address": "lol"}`,
+			json: `{"lat": -91,"long": 67,"date": "lol"}`,
 		},
 		{
 			name: "Передача невалидного +lat",
-			json: `{"lat": 91,"long": 67,"address": "lol"}`,
+			json: `{"lat": 91,"long": 67,"date": "lol"}`,
 		},
 		{
 			name: "Отсутствие lat",
-			json: `{"long": 0,"address": "lol"}`,
+			json: `{"long": 0,"date": "lol"}`,
 		},
 		{
 			name: "Передача невалидного +long",
-			json: `{"lat": 67,"long": 181,"address": "lol"}`,
+			json: `{"lat": 67,"long": 181,"date": "lol"}`,
 		},
 		{
 			name: "Передача невалидного -long",
-			json: `{"lat": 67,"long": -181,"address": "lol"}`,
+			json: `{"lat": 67,"long": -181,"date": "lol"}`,
 		},
 		{
 			name: "Отсутствие long",
-			json: `{"lat": 0.0, "address": "lol"}`,
+			json: `{"lat": 0.0, "date": "lol"}`,
 		},
 		{
-			name: "Отсутствие address",
+			name: "Отсутствие date",
 			json: `{"lat": 0.0,"long": 18}`,
 		},
 		{
@@ -124,8 +125,8 @@ func TestE2E_RentAdd_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			resp, err := httpClient.Post(rentsAPI(), "application/json", bytes.NewBufferString(tc.json))
+
+			resp, err := httpClient.Post(eventsAPI(), "application/json", bytes.NewBufferString(tc.json))
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
@@ -134,40 +135,40 @@ func TestE2E_RentAdd_Validation(t *testing.T) {
 	}
 }
 
-func httpGetRentByID(id int64) (*http.Response, error) {
-	return httpClient.Get(fmt.Sprintf("%s/%d", rentsAPI(), id))
+func httpGetEventByID(id int64) (*http.Response, error) {
+	return httpClient.Get(fmt.Sprintf("%s/%d", eventsAPI(), id))
 }
 
-func TestE2E_RentGetByID(t *testing.T) {
+func TestE2E_EventGetByID(t *testing.T) {
 	clearTables(t)
-	createdRent, err := addRent(validLat, validLong, validAddress, new(validInfo))
+	createdEvent, err := addEvent(validLat, validLong, validDate, new(validInfo))
 	require.NoError(t, err)
 
-	resp, err := httpGetRentByID(int64(createdRent.ID))
+	resp, err := httpGetEventByID(int64(createdEvent.ID))
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
-	var parsedRent dto.RentResponse
-	err = parseBody(resp.Body, &parsedRent)
+	var parsedEvent dto.EventResponse
+	err = parseBody(resp.Body, &parsedEvent)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, createdRent.Lat, parsedRent.Lat)
-	assert.Equal(t, createdRent.Long, parsedRent.Long)
-	assert.Equal(t, createdRent.Address, parsedRent.Address)
-	assert.Equal(t, createdRent.Info, parsedRent.Info)
+	assert.Equal(t, createdEvent.Lat, parsedEvent.Lat)
+	assert.Equal(t, createdEvent.Long, parsedEvent.Long)
+	assert.Equal(t, createdEvent.Date, parsedEvent.Date)
+	assert.Equal(t, createdEvent.Info, parsedEvent.Info)
 }
 
-func TestE2E_RentGetByID_NotFound(t *testing.T) {
+func TestE2E_EventGetByID_NotFound(t *testing.T) {
 	clearTables(t)
-	resp, err := httpGetRentByID(1)
+	resp, err := httpGetEventByID(1)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
 
-func TestE2E_RentGetByID_Validation(t *testing.T) {
+func TestE2E_EventGetByID_Validation(t *testing.T) {
 	clearTables(t)
 
 	type testCase struct {
@@ -188,8 +189,8 @@ func TestE2E_RentGetByID_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", rentsAPI(), tc.ID))
+
+			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", eventsAPI(), tc.ID))
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
@@ -198,7 +199,7 @@ func TestE2E_RentGetByID_Validation(t *testing.T) {
 	}
 }
 
-func httpUpdateRent(id int64, payload any) (*http.Response, error) {
+func httpUpdateEvent(id int64, payload any) (*http.Response, error) {
 	jsonBytes, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
@@ -206,7 +207,7 @@ func httpUpdateRent(id int64, payload any) (*http.Response, error) {
 
 	request, err := http.NewRequest(
 		http.MethodPatch,
-		fmt.Sprintf("%s/%d", rentsAPI(), id),
+		fmt.Sprintf("%s/%d", eventsAPI(), id),
 		bytes.NewBuffer(jsonBytes),
 	)
 	if err != nil {
@@ -216,155 +217,155 @@ func httpUpdateRent(id int64, payload any) (*http.Response, error) {
 	return httpClient.Do(request)
 }
 
-func TestE2E_RentUpdate(t *testing.T) {
+func TestE2E_EventUpdate(t *testing.T) {
 	clearTables(t)
 
 	type testCase struct {
 		name             string
-		baseRent         dto.CreateRentRequest
-		request          dto.UpdateRentRequest
-		expectedResponse dto.RentResponse
+		baseEvent        dto.CreateEventRequest
+		request          dto.UpdateEventRequest
+		expectedResponse dto.EventResponse
 	}
 
-	validRentRequest := dto.CreateRentRequest{
-		Lat:     validLat,
-		Long:    validLong,
-		Address: validAddress,
-		Info:    new(validInfo),
+	validEventRequest := dto.CreateEventRequest{
+		Lat:  validLat,
+		Long: validLong,
+		Date: validDate,
+		Info: new(validInfo),
 	}
 
 	tests := []testCase{
 		{
 			name:             "Update lat",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Lat: new(1.0)},
-			expectedResponse: dto.RentResponse{Lat: 1.0, Long: validLong, Address: validAddress, Info: new(validInfo)},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Lat: new(1.0)},
+			expectedResponse: dto.EventResponse{Lat: 1.0, Long: validLong, Date: validDate, Info: new(validInfo)},
 		},
 		{
 			name:             "Update long",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Long: new(1.0)},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: 1.0, Address: validAddress, Info: new(validInfo)},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Long: new(1.0)},
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: 1.0, Date: validDate, Info: new(validInfo)},
 		},
 		{
-			name:             "Update address",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Address: new("ll")},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: "ll", Info: new(validInfo)},
+			name:             "Update date",
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Date: new(time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC))},
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: validLong, Date: time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC), Info: new(validInfo)},
 		},
 		{
 			name:             "Update info",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Info: new("ll")},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: new("ll")},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Info: new("ll")},
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: validLong, Date: validDate, Info: new("ll")},
 		},
 		{
 			name:             "Update 2 params",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Lat: new(1.0), Long: new(2.0)},
-			expectedResponse: dto.RentResponse{Lat: 1.0, Long: 2.0, Address: validAddress, Info: new(validInfo)},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Lat: new(1.0), Long: new(2.0)},
+			expectedResponse: dto.EventResponse{Lat: 1.0, Long: 2.0, Date: validDate, Info: new(validInfo)},
 		},
 		{
-			name:             "Update address with empty info",
-			baseRent:         dto.CreateRentRequest{Lat: validLat, Long: validLong, Address: validAddress},
-			request:          dto.UpdateRentRequest{Address: new("ll")},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: "ll", Info: (*string)(nil)},
+			name:             "Update date with empty info",
+			baseEvent:        dto.CreateEventRequest{Lat: validLat, Long: validLong, Date: validDate},
+			request:          dto.UpdateEventRequest{Date: new(time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC))},
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: validLong, Date: time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC), Info: (*string)(nil)},
 		},
 		{
 			name:             "Update info with empty info",
-			baseRent:         dto.CreateRentRequest{Lat: validLat, Long: validLong, Address: validAddress},
-			request:          dto.UpdateRentRequest{Info: new("ll")},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: new("ll")},
+			baseEvent:        dto.CreateEventRequest{Lat: validLat, Long: validLong, Date: validDate},
+			request:          dto.UpdateEventRequest{Info: new("ll")},
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: validLong, Date: validDate, Info: new("ll")},
 		},
 		{
 			name:             "Update lat to absolute zero",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Lat: new(0.0)}, // Раньше бы это поле проигнорировалось
-			expectedResponse: dto.RentResponse{Lat: 0.0, Long: validLong, Address: validAddress, Info: new(validInfo)},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Lat: new(0.0)}, // Раньше бы это поле проигнорировалось
+			expectedResponse: dto.EventResponse{Lat: 0.0, Long: validLong, Date: validDate, Info: new(validInfo)},
 		},
 		{
 			name:             "Update long to absolute zero",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Long: new(0.0)},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: 0.0, Address: validAddress, Info: new(validInfo)},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Long: new(0.0)},
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: 0.0, Date: validDate, Info: new(validInfo)},
 		},
 		{
 			name:             "Update lat to max boundary (North Pole)",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Lat: new(90.0)},
-			expectedResponse: dto.RentResponse{Lat: 90.0, Long: validLong, Address: validAddress, Info: new(validInfo)},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Lat: new(90.0)},
+			expectedResponse: dto.EventResponse{Lat: 90.0, Long: validLong, Date: validDate, Info: new(validInfo)},
 		},
 		{
 			name:             "Update long to max boundary",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Long: new(180.0)},
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: 180.0, Address: validAddress, Info: new(validInfo)},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Long: new(180.0)},
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: 180.0, Date: validDate, Info: new(validInfo)},
 		},
 		{
-			name:     "Update absolutely all fields simultaneously",
-			baseRent: validRentRequest,
-			request: dto.UpdateRentRequest{
-				Lat:     new(45.5),
-				Long:    new(120.3),
-				Address: new("Новый проспект, дом 10"),
-				Info:    new("Вход со двора, код 44"),
+			name:      "Update absolutely all fields simultaneously",
+			baseEvent: validEventRequest,
+			request: dto.UpdateEventRequest{
+				Lat:  new(45.5),
+				Long: new(120.3),
+				Date: new(time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC)),
+				Info: new("Вход со двора, код 44"),
 			},
-			expectedResponse: dto.RentResponse{Lat: 45.5, Long: 120.3, Address: "Новый проспект, дом 10", Info: new("Вход со двора, код 44")},
+			expectedResponse: dto.EventResponse{Lat: 45.5, Long: 120.3, Date: time.Date(2026, time.July, 17, 12, 0, 0, 0, time.UTC), Info: new("Вход со двора, код 44")},
 		},
 		{
 			name:             "Empty patch request (no body fields sent)",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{}, // Все поля внутри равны nil
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: new(validInfo)},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{}, // Все поля внутри равны nil
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: validLong, Date: validDate, Info: new(validInfo)},
 		},
 		{
 			name:             "Update info from text to empty string",
-			baseRent:         validRentRequest,
-			request:          dto.UpdateRentRequest{Info: new("")}, // Затираем комментарий
-			expectedResponse: dto.RentResponse{Lat: validLat, Long: validLong, Address: validAddress, Info: new("")},
+			baseEvent:        validEventRequest,
+			request:          dto.UpdateEventRequest{Info: new("")}, // Затираем комментарий
+			expectedResponse: dto.EventResponse{Lat: validLat, Long: validLong, Date: validDate, Info: new("")},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			createdRent, err := addRent(tc.baseRent.Lat, tc.baseRent.Long, tc.baseRent.Address, tc.baseRent.Info)
-			require.NoError(t, err)
-			tc.expectedResponse.ID = createdRent.ID
 
-			resp, err := httpUpdateRent(int64(createdRent.ID), tc.request)
+			createdEvent, err := addEvent(tc.baseEvent.Lat, tc.baseEvent.Long, tc.baseEvent.Date, tc.baseEvent.Info)
+			require.NoError(t, err)
+			tc.expectedResponse.ID = createdEvent.ID
+
+			resp, err := httpUpdateEvent(int64(createdEvent.ID), tc.request)
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
 			require.Equal(t, http.StatusOK, resp.StatusCode)
 
-			var updatedRent dto.RentResponse
-			err = parseBody(resp.Body, &updatedRent)
+			var updatedEvent dto.EventResponse
+			err = parseBody(resp.Body, &updatedEvent)
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expectedResponse, updatedRent)
+			assert.Equal(t, tc.expectedResponse, updatedEvent)
 		})
 	}
 }
 
-func TestE2E_RentUpdate_NotFound(t *testing.T) {
+func TestE2E_EventUpdate_NotFound(t *testing.T) {
 	clearTables(t)
 
-	validRentRequest := dto.CreateRentRequest{
-		Lat:     validLat,
-		Long:    validLong,
-		Address: validAddress,
-		Info:    new(validInfo),
+	validEventRequest := dto.CreateEventRequest{
+		Lat:  validLat,
+		Long: validLong,
+		Date: validDate,
+		Info: new(validInfo),
 	}
 
-	resp, err := httpUpdateRent(1, validRentRequest)
+	resp, err := httpUpdateEvent(1, validEventRequest)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
 
-func TestE2E_RentUpdate_Validation(t *testing.T) {
+func TestE2E_EventUpdate_Validation(t *testing.T) {
 	clearTables(t)
 
 	type testCase struct {
@@ -375,19 +376,19 @@ func TestE2E_RentUpdate_Validation(t *testing.T) {
 	tests := []testCase{
 		{
 			name: "Передача невалидного -lat",
-			json: `{"lat": -91,"long": 67,"address": "lol"}`,
+			json: `{"lat": -91,"long": 67,"date": "lol"}`,
 		},
 		{
 			name: "Передача невалидного +lat",
-			json: `{"lat": 91,"long": 67,"address": "lol"}`,
+			json: `{"lat": 91,"long": 67,"date": "lol"}`,
 		},
 		{
 			name: "Передача невалидного +long",
-			json: `{"lat": 67,"long": 181,"address": "lol"}`,
+			json: `{"lat": 67,"long": 181,"date": "lol"}`,
 		},
 		{
 			name: "Передача невалидного -long",
-			json: `{"lat": 67,"long": -181,"address": "lol"}`,
+			json: `{"lat": 67,"long": -181,"date": "lol"}`,
 		},
 		{
 			name: "Сломанный синтаксис JSON",
@@ -397,10 +398,10 @@ func TestE2E_RentUpdate_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+
 			request, err := http.NewRequest(
 				http.MethodPatch,
-				fmt.Sprintf("%s/%d", rentsAPI(), 1),
+				fmt.Sprintf("%s/%d", eventsAPI(), 1),
 				bytes.NewBufferString(tc.json),
 			)
 			require.NoError(t, err)
@@ -414,10 +415,10 @@ func TestE2E_RentUpdate_Validation(t *testing.T) {
 	}
 }
 
-func httpDeleteRent(id int64) (*http.Response, error) {
+func httpDeleteEvent(id int64) (*http.Response, error) {
 	request, err := http.NewRequest(
 		http.MethodDelete,
-		fmt.Sprintf("%s/%d", rentsAPI(), id),
+		fmt.Sprintf("%s/%d", eventsAPI(), id),
 		nil,
 	)
 	if err != nil {
@@ -426,36 +427,36 @@ func httpDeleteRent(id int64) (*http.Response, error) {
 	return httpClient.Do(request)
 }
 
-func TestE2E_RentDelete(t *testing.T) {
+func TestE2E_EventDelete(t *testing.T) {
 	clearTables(t)
 
-	rent, err := addRent(validLat, validLong, validAddress, new(validInfo))
+	event, err := addEvent(validLat, validLong, validDate, new(validInfo))
 	require.NoError(t, err)
 
-	resp1, err := httpDeleteRent(int64(rent.ID))
+	resp1, err := httpDeleteEvent(int64(event.ID))
 	require.NoError(t, err)
 	defer resp1.Body.Close()
 
 	require.Equal(t, http.StatusNoContent, resp1.StatusCode)
 
-	resp2, err := httpGetRentByID(int64(rent.ID))
+	resp2, err := httpGetEventByID(int64(event.ID))
 	require.NoError(t, err)
 	defer resp2.Body.Close()
 
 	assert.Equal(t, http.StatusNotFound, resp2.StatusCode)
 }
 
-func TestE2E_RentDelete_NotFound(t *testing.T) {
+func TestE2E_EventDelete_NotFound(t *testing.T) {
 	clearTables(t)
 
-	resp, err := httpDeleteRent(1)
+	resp, err := httpDeleteEvent(1)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
 
-func TestE2E_RentDelete_Validation(t *testing.T) {
+func TestE2E_EventDelete_Validation(t *testing.T) {
 	clearTables(t)
 
 	type testCase struct {
@@ -476,10 +477,10 @@ func TestE2E_RentDelete_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+
 			request, err := http.NewRequest(
 				http.MethodDelete,
-				fmt.Sprintf("%s/%s", rentsAPI(), tc.id),
+				fmt.Sprintf("%s/%s", eventsAPI(), tc.id),
 				nil,
 			)
 			require.NoError(t, err)
@@ -493,20 +494,20 @@ func TestE2E_RentDelete_Validation(t *testing.T) {
 	}
 }
 
-func TestE2E_RentAvailable(t *testing.T) {
+func TestE2E_EventAvailable(t *testing.T) {
 	clearTables(t) // Очищаем базу перед тестом
 
 	// 1. Координаты центра (например, центр Питера)
 	centerLat := 59.9398
 	centerLong := 30.3146
 
-	// 2. Создаем тестовые точки в базе данных через вашу функцию addRent
+	// 2. Создаем тестовые точки в базе данных через вашу функцию addEvent
 	// Точка А: Близко к центру (в районе 3.5 км)
-	rentClose, err := addRent(59.9311, 30.3609, "Рядом с центром", new("Доступно"))
+	eventClose, err := addEvent(59.9311, 30.3609, validDate, new("Доступно"))
 	require.NoError(t, err)
 
 	// Точка Б: Очень далеко (Выборг, ~120 км)
-	_, err = addRent(60.7102, 28.7469, "Очень далеко", new("Доступно"))
+	_, err = addEvent(60.7102, 28.7469, validDate, new("Доступно"))
 	require.NoError(t, err)
 
 	type testCase struct {
@@ -526,15 +527,15 @@ func TestE2E_RentAvailable(t *testing.T) {
 			name:          "Средний радиус (5 км) - должен найти только близкую точку",
 			searchRadius:  5000,
 			expectedCount: 1,
-			expectID:      rentClose.ID,
+			expectID:      eventClose.ID,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+
 			url := fmt.Sprintf("%s/available?lat=%f&long=%f&radius=%d",
-				rentsAPI(), centerLat, centerLong, tc.searchRadius,
+				eventsAPI(), centerLat, centerLong, tc.searchRadius,
 			)
 
 			resp, err := httpClient.Get(url)
@@ -543,20 +544,20 @@ func TestE2E_RentAvailable(t *testing.T) {
 
 			require.Equal(t, http.StatusOK, resp.StatusCode)
 
-			var foundRents []dto.RentResponse
-			err = parseBody(resp.Body, &foundRents)
+			var foundEvents []dto.EventResponse
+			err = parseBody(resp.Body, &foundEvents)
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expectedCount, len(foundRents), "Количество найденных объектов не совпадает")
+			assert.Equal(t, tc.expectedCount, len(foundEvents), "Количество найденных объектов не совпадает")
 
 			if tc.expectedCount == 1 {
-				assert.Equal(t, tc.expectID, foundRents[0].ID, "База вернула не тот объект")
+				assert.Equal(t, tc.expectID, foundEvents[0].ID, "База вернула не тот объект")
 			}
 		})
 	}
 }
 
-func TestE2E_RentAvailable_Validation(t *testing.T) {
+func TestE2E_EventAvailable_Validation(t *testing.T) {
 	clearTables(t)
 
 	type testCase struct {
@@ -617,8 +618,8 @@ func TestE2E_RentAvailable_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			url := fmt.Sprintf("%s/available?%s", rentsAPI(), tc.queryParams)
+
+			url := fmt.Sprintf("%s/available?%s", eventsAPI(), tc.queryParams)
 
 			resp, err := httpClient.Get(url)
 			require.NoError(t, err)

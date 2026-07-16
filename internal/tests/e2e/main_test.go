@@ -38,6 +38,12 @@ var httpClient = &http.Client{
 	Timeout: 5 * time.Second,
 }
 
+const (
+	validLat  = 67.6767
+	validLong = 67.6767
+	validInfo = "lool"
+)
+
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 
@@ -99,6 +105,8 @@ func usersAPI() string { return testServerURL + "/api/users" }
 
 func rentsAPI() string { return testServerURL + "/api/rents" }
 
+func eventsAPI() string { return testServerURL + "/api/events" }
+
 func parseBody(body io.ReadCloser, dest any) error {
 	err := json.NewDecoder(body).Decode(dest)
 	if err != nil {
@@ -108,7 +116,7 @@ func parseBody(body io.ReadCloser, dest any) error {
 }
 
 func clearTables(t *testing.T) {
-	_, err := testDB.Exec("TRUNCATE TABLE users, rents RESTART IDENTITY CASCADE;")
+	_, err := testDB.Exec("TRUNCATE TABLE users, rents, events RESTART IDENTITY CASCADE;")
 	if err != nil {
 		t.Fatalf("Ошибка очистки таблицы перед тестом: %v", err)
 	}
