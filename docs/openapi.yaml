@@ -422,6 +422,113 @@ paths:
         '400':
           description: Validation error in the request parameters
 
+  /infrastructure/types:
+    post:
+      summary: Create infrastructure type
+      operationId: createInfrastructureType
+      tags:
+        - InfrastructureType
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInfrastructureTypeRequest'
+      responses:
+        '201':
+          description: Infrastructure type created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfrastructureTypeResponse'
+        '400':
+          description: Validation error in the request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict error when trying to create an infrastructure type that already exists
+
+  /infrastructure/types/{id}:
+    get:
+      summary: Get infrastructure type by ID
+      operationId: getInfrastructureTypeById
+      tags:
+        - InfrastructureType
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Internal infrastructure type ID
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        '200':
+          description: Successful response with infrastructure type data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfrastructureTypeResponse'
+        '404':
+          description: Infrastructure type not found
+        '400':
+          description: Validation error in the request parameters
+    patch:
+      summary: Update infrastructure type
+      operationId: updateInfrastructureType
+      tags:
+        - InfrastructureType
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Internal infrastructure type ID
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInfrastructureTypeRequest'
+      responses:
+        '200':
+          description: Infrastructure type updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfrastructureTypeResponse'
+        '400':
+          description: Validation error in the request parameters
+        '404':
+          description: Infrastructure type not found
+    delete:
+      summary: Delete infrastructure type
+      operationId: deleteInfrastructureType
+      tags:
+        - InfrastructureType
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Internal infrastructure type ID
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        '204':
+          description: Infrastructure type deleted successfully (no response body)
+        '404':
+          description: Infrastructure type not found
+        '400':
+          description: Validation error in the request parameters
+
   /users/{id}/locations:
     get:
       summary: Get all locations of a user
@@ -1061,6 +1168,80 @@ components:
           format: date-time
           example: "2026-07-13T12:30:00Z"
           description: Last update timestamp
+
+    CreateInfrastructureTypeRequest:
+      type: object
+      required:
+        - slug
+        - name
+      properties:
+        slug:
+          type: string
+          example: "subway"
+          description: Identifier for the infrastructure type used in code
+        name:
+          type: string
+          example: "Метро"
+          description: Russian display name for the infrastructure type
+        weight:
+          type: number
+          format: float
+          example: 1.0
+          description: Base weight coefficient for scoring algorithms
+        max_radius:
+          type: integer
+          format: uint16
+          example: 1000
+          description: Maximum effective radius of the infrastructure type in meters
+
+    UpdateInfrastructureTypeRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: "subway"
+          description: Identifier for the infrastructure type used in code
+        name:
+          type: string
+          example: "Метро"
+          description: Russian display name for the infrastructure type
+        weight:
+          type: number
+          format: float
+          example: 1.2
+          description: Base weight coefficient for scoring algorithms
+        max_radius:
+          type: integer
+          format: uint16
+          example: 1200
+          description: Maximum effective radius of the infrastructure type in meters
+
+    InfrastructureTypeResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+          description: Internal infrastructure type ID
+        slug:
+          type: string
+          example: "subway"
+          description: Identifier for the infrastructure type used in code
+        name:
+          type: string
+          example: "Метро"
+          description: Russian display name for the infrastructure type
+        weight:
+          type: number
+          format: float
+          example: 1.0
+          description: Base weight coefficient for scoring algorithms
+        max_radius:
+          type: integer
+          format: uint16
+          example: 1000
+          description: Maximum effective radius of the infrastructure type in meters
 
     ErrorResponse:
       type: object

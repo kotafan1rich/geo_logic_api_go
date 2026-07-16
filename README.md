@@ -64,6 +64,15 @@ GeoLogicApi предоставляет REST API для:
 - `created_at` — datetime
 - `updated_at` — datetime
 
+### InfrastructureType
+- `id` — PK
+- `slug` — string, unique identifier for code usage (e.g. `subway`, `cafe`)
+- `name` — string, display name (e.g. `Метро`)
+- `weight` — float, base score coefficient
+- `max_radius` — uint16, maximum influence radius in meters
+- `created_at` — datetime
+- `updated_at` — datetime
+
 ## Что уже реализовано
 
 - **Базовая структура**: Архитектура проекта с разделением слоёв (`internal/api`, `internal/handler`, `internal/service`, `internal/repository`, `internal/database`).
@@ -84,6 +93,7 @@ GeoLogicApi предоставляет REST API для:
 - Добавить аутентификацию/авторизацию (если потребуется).
 - Расширить unit-тестирование бизнес-логики сервисов.
 - Подготовить API документацию (OpenAPI/Swagger).
+- Расширить документацию по новым сущностям: `Events`, `Infrastructure`, `Users_locations`, `InfrastructureType`.
 
 ## Конфигурация и запуск
 
