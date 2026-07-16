@@ -17,11 +17,10 @@ type Logger interface {
 
 type userHandler struct {
 	service service.UserService
-	log     Logger
 }
 
-func NewHandler(service service.UserService, log Logger) *userHandler {
-	return &userHandler{service: service, log: log}
+func NewHandler(service service.UserService) *userHandler {
+	return &userHandler{service: service}
 }
 
 func (h *userHandler) Create(c *gin.Context) {
