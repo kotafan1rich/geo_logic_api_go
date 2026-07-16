@@ -10,6 +10,6 @@ type Event struct {
 	database.Base
 
 	Location database.DBGeoPoint `gorm:"column:location;type:geometry(Point,4326);not null"`
-	Date     time.Time           `gorm:"column:date;type:datetime;default:CURRENT_TIMESTAMP;not null"`
+	Date     time.Time           `gorm:"column:date;type:timestamp;default:CURRENT_TIMESTAMP;not null"`
 	Info     *string             `gorm:"column:info;type:varchar;size:255"`
 }

@@ -19,7 +19,7 @@ type mainHandler struct {
 }
 
 func NewMainHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler, eventHandler handler.EventHandler) Handler {
-	return &mainHandler{log: log, userHandler: userHandler, rentHandler: rentHandler}
+	return &mainHandler{log: log, userHandler: userHandler, rentHandler: rentHandler, eventHandler: eventHandler}
 }
 
 func (h *mainHandler) Routes() *gin.Engine {
