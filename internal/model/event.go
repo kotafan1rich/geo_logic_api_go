@@ -9,11 +9,18 @@ type Event struct {
 	Info    *string
 }
 
-func NewEvent(id uint64, geopoint GeoPoint, date time.Time, info *string) *Event {
+func NewEvent(geopoint GeoPoint, date time.Time, info *string) *Event {
 	return &Event{
-		ID:      id,
 		Geopint: geopoint,
 		Date:    date,
 		Info:    info,
 	}
+}
+
+func (e *Event) UpdateDate(date time.Time) {
+	e.Date = date
+}
+
+func (e *Event) UpdateInfo(info *string) {
+	e.Info = info
 }

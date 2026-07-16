@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 )
@@ -19,4 +20,12 @@ type RentService interface {
 	Update(ctx context.Context, id uint64, lat, long *float64, address, info *string) (*model.Rent, error)
 	Delete(ctx context.Context, id uint64) error
 	Available(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Rent, error)
+}
+
+type EventService interface {
+	Create(ctx context.Context, lat, long float64, date time.Time, info *string) (*model.Event, error)
+	GetById(ctx context.Context, id uint64) (*model.Event, error)
+	Update(ctx context.Context, id uint64, lat, long *float64, date time.Time, info *string) (*model.Event, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Event, error)
 }

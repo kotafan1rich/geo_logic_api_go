@@ -6,7 +6,12 @@ import (
 )
 
 func ToEvent(event *Event) *model.Event {
-	return model.NewEvent(event.ID, model.GeoPoint(event.Location), event.Date, event.Info)
+	return &model.Event{
+		ID:      event.ID,
+		Geopint: model.GeoPoint(event.Location),
+		Date:    event.Date,
+		Info:    event.Info,
+	}
 }
 
 func ToEventSlice(rents []Event) []model.Event {

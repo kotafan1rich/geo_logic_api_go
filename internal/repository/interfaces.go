@@ -20,3 +20,11 @@ type RentRepository interface {
 	Delete(ctx context.Context, id uint64) error
 	Available(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Rent, error)
 }
+
+type EventRepository interface {
+	Create(ctx context.Context, event *model.Event) (*model.Event, error)
+	GetByID(ctx context.Context, id uint64) (*model.Event, error)
+	Update(ctx context.Context, event *model.Event) (*model.Event, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Event, error)
+}
