@@ -80,7 +80,7 @@ func (s *eventService) Update(ctx context.Context, id uint64, lat, long *float64
 	}
 
 	if lat != nil {
-		err = oldEvent.Geopint.UpdateLat(*lat)
+		err = oldEvent.Geopoint.UpdateLat(*lat)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidLat) {
 				s.log.Warn("validation error", "error", err)
@@ -91,7 +91,7 @@ func (s *eventService) Update(ctx context.Context, id uint64, lat, long *float64
 		}
 	}
 	if long != nil {
-		err = oldEvent.Geopint.UpdateLong(*long)
+		err = oldEvent.Geopoint.UpdateLong(*long)
 		if err != nil {
 			if errors.Is(err, apperrors.ErrInvalidLong) {
 				s.log.Warn("validation error", "error", err)

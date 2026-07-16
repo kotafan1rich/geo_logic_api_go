@@ -5,8 +5,8 @@ import "github.com/kotafan1rich/geo_logic_api_go/internal/model"
 func ToEventResponse(event *model.Event) *EventResponse {
 	return &EventResponse{
 		ID:   event.ID,
-		Lat:  event.Geopint.Lat,
-		Long: event.Geopint.Long,
+		Lat:  event.Geopoint.Lat,
+		Long: event.Geopoint.Long,
 		Date: event.Date,
 		Info: event.Info,
 	}

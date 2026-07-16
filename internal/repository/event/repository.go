@@ -20,7 +20,7 @@ func NewRepository(db database.DB) *eventRepository {
 }
 
 func (r *eventRepository) Create(ctx context.Context, event *model.Event) (*model.Event, error) {
-	point := database.DBGeoPoint(event.Geopint)
+	point := database.DBGeoPoint(event.Geopoint)
 	wktPoint, err := point.Value()
 	if err != nil {
 		return nil, err
