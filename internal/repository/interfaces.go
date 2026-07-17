@@ -28,3 +28,18 @@ type EventRepository interface {
 	Delete(ctx context.Context, id uint64) error
 	Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Event, error)
 }
+
+type InfrastructureRepository interface {
+	Create(ctx context.Context, infra *model.InfrastructureObject) (*model.InfrastructureObject, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfrastructureObject, error)
+	Update(ctx context.Context, infra *model.InfrastructureObject) (*model.InfrastructureObject, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.InfrastructureObject, error)
+}
+
+type InfrastructureTypeRepository interface {
+	Create(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error)
+	GetById(ctx context.Context, id uint64) (*model.InfrastructureType, error)
+	Update(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error)
+	Delete(ctx context.Context, id uint64) error
+}
