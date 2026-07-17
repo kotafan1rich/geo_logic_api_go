@@ -22,7 +22,7 @@ type typeService struct {
 	log  Logger
 }
 
-func NewUserService(log Logger, repo repository.InfrastructureTypeRepository) service.InfrastructureTypeService {
+func NewTypeService(log Logger, repo repository.InfrastructureTypeRepository) service.InfrastructureTypeService {
 	return &typeService{log: log, repo: repo}
 }
 

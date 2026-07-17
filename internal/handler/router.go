@@ -25,7 +25,14 @@ type EventHandler interface {
 	Near(c *gin.Context)
 }
 
-func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler) {
+type InfrastructureTypeHandler interface {
+	Create(c *gin.Context)
+	GetById(c *gin.Context)
+	Update(c *gin.Context)
+	Delete(c *gin.Context)
+}
+
+func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler, typeHandler InfrastructureTypeHandler) {
 	user := router.Group("/users")
 	{
 		user.POST("/", userHandler.Create)
@@ -51,4 +58,16 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 		event.DELETE("/:id", eventHandler.Delete)
 		event.GET("/available", eventHandler.Near)
 	}
+
+	infrastructure := router.Group("/infrastructure")
+	{
+		infraType := infrastructure.Group("/types")
+		{
+			infraType.POST("/", typeHandler.Create)
+			infraType.GET("/:id", typeHandler.GetById)
+			infraType.PATCH("/:id", typeHandler.Update)
+			infraType.DELETE("/:id", typeHandler.Delete)
+		}
+	}
+
 }

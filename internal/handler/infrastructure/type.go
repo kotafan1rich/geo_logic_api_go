@@ -1,4 +1,4 @@
-package user
+package infrastructure
 
 import (
 	"net/http"
@@ -7,36 +7,36 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
 	gendto "github.com/kotafan1rich/geo_logic_api_go/internal/handler/dto"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user/dto"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infrastructure/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
-type userHandler struct {
-	service service.UserService
+type typeHandler struct {
+	service service.InfrastructureTypeService
 }
 
-func NewHandler(service service.UserService) *userHandler {
-	return &userHandler{service: service}
+func NewHandler(service service.InfrastructureTypeService) *typeHandler {
+	return &typeHandler{service: service}
 }
 
-func (h *userHandler) Create(c *gin.Context) {
-	var req dto.CreateUserRequest
+func (t *typeHandler) Create(c *gin.Context) {
+	var req dto.CreateTypeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
 		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	user, err := h.service.Create(c.Request.Context(), req.TgID)
+	infraType, err := t.service.Create(c.Request.Context(), req.Slug, req.Name, req.Weight, req.MaxRadius)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, dto.ToUserResponse(user))
+	c.JSON(http.StatusCreated, dto.ToTypeResponse(infraType))
 }
 
-func (h *userHandler) GetById(c *gin.Context) {
+func (t *typeHandler) GetById(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
@@ -44,37 +44,37 @@ func (h *userHandler) GetById(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.GetById(c.Request.Context(), reqUri.ID)
+	infraType, err := t.service.GetById(c.Request.Context(), reqUri.ID)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToUserResponse(user))
+	c.JSON(http.StatusOK, dto.ToTypeResponse(infraType))
 }
 
-func (h *userHandler) Update(c *gin.Context) {
+func (t *typeHandler) Update(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
 		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
-	var reqBody dto.UpdateUserRequest
+	var reqBody dto.UpdateTypeRequest
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		errDetails := handler.ParseValidationError(err)
 		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
 
-	user, err := h.service.Update(c.Request.Context(), reqUri.ID, reqBody.TgID)
+	infraType, err := t.service.Update(c.Request.Context(), reqUri.ID, reqBody.Slug, reqBody.Name, reqBody.Weight, reqBody.MaxRadius)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToUserResponse(user))
+	c.JSON(http.StatusOK, dto.ToTypeResponse(infraType))
 }
 
-func (h *userHandler) Delete(c *gin.Context) {
+func (t *typeHandler) Delete(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
@@ -82,7 +82,7 @@ func (h *userHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	err := h.service.Delete(c.Request.Context(), reqUri.ID)
+	err := t.service.Delete(c.Request.Context(), reqUri.ID)
 	if err != nil {
 		_ = c.Error(err)
 		return

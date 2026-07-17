@@ -12,5 +12,5 @@ type InfrastructureObject struct {
 	Name     *string             `gorm:"column:name;type:varchar;size:255;default:null"`
 
 	TypeID uint64             `gorm:"column:type_id;type:bigint;not null;index"`
-	Type   InfrastructureType `gorm:"column:type;foreign_key:TypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Type   InfrastructureType `gorm:"foreign_key:TypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
