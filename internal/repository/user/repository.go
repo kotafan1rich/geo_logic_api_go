@@ -49,7 +49,7 @@ func (r *userRepository) GetById(ctx context.Context, id uint64) (*model.User, e
 
 func (r *userRepository) Update(ctx context.Context, user *model.User) (*model.User, error) {
 	userModel := dbmodel.ToUserModel(user)
-	result := r.db.GORM().WithContext(ctx).Model(&userModel).Updates(&userModel)
+	result := r.db.GORM().WithContext(ctx).Model(&userModel).Select("*").Updates(&userModel)
 	if result.Error != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {
