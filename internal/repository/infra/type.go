@@ -33,7 +33,7 @@ func (t *infraTypeRepository) Create(ctx context.Context, infraType *model.Infra
 	return infraType, nil
 }
 
-func (t *infraTypeRepository) GetById(ctx context.Context, id uint64) (*model.InfrastructureType, error) {
+func (t *infraTypeRepository) GetByID(ctx context.Context, id uint64) (*model.InfrastructureType, error) {
 	var typeModel dbmodel.InfrastructureType
 	err := t.db.GORM().WithContext(ctx).First(&typeModel, id).Error
 	if err != nil {

@@ -36,7 +36,7 @@ func (t *typeHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToTypeResponse(infraType))
 }
 
-func (t *typeHandler) GetById(c *gin.Context) {
+func (t *typeHandler) GetByID(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
@@ -44,7 +44,7 @@ func (t *typeHandler) GetById(c *gin.Context) {
 		return
 	}
 
-	infraType, err := t.service.GetById(c.Request.Context(), reqUri.ID)
+	infraType, err := t.service.GetByID(c.Request.Context(), reqUri.ID)
 	if err != nil {
 		_ = c.Error(err)
 		return

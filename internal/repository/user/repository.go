@@ -34,7 +34,7 @@ func (r *userRepository) Create(ctx context.Context, user *model.User) (*model.U
 	return user, nil
 }
 
-func (r *userRepository) GetById(ctx context.Context, id uint64) (*model.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id uint64) (*model.User, error) {
 	var user dbmodel.User
 	err := r.db.GORM().WithContext(ctx).First(&user, id).Error
 	if err != nil {

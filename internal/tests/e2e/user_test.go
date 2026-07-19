@@ -15,8 +15,8 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user/dto"
 )
 
-func httpAddUser(tgId uint64) (*http.Response, error) {
-	payload := dto.CreateUserRequest{TgID: tgId}
+func httpAddUser(tgID uint64) (*http.Response, error) {
+	payload := dto.CreateUserRequest{TgID: tgID}
 
 	jsonBytes, err := json.Marshal(payload)
 	if err != nil {
@@ -26,8 +26,8 @@ func httpAddUser(tgId uint64) (*http.Response, error) {
 	return httpClient.Post(usersAPI(), "application/json", bytes.NewBuffer(jsonBytes))
 }
 
-func addUser(tgId uint64) (*dto.UserResponse, error) {
-	resp, err := httpAddUser(tgId)
+func addUser(tgID uint64) (*dto.UserResponse, error) {
+	resp, err := httpAddUser(tgID)
 	if err != nil {
 		return nil, err
 	}
@@ -53,13 +53,13 @@ func TestE2E_UserAdd(t *testing.T) {
 
 func TestE2E_UserAdd_Conflict(t *testing.T) {
 	clearTables(t)
-	var tgId uint64 = 1
+	var tgID uint64 = 1
 
-	resp1, err := httpAddUser(tgId)
+	resp1, err := httpAddUser(tgID)
 	require.NoError(t, err)
 	defer resp1.Body.Close()
 
-	resp2, err := httpAddUser(tgId)
+	resp2, err := httpAddUser(tgID)
 	require.NoError(t, err)
 	defer resp2.Body.Close()
 
@@ -131,8 +131,8 @@ func getUserByID(id int64) (*dto.UserResponse, error) {
 
 func TestE2E_UserGetByID(t *testing.T) {
 	clearTables(t)
-	var tgId uint64 = 1
-	createdUser, err := addUser(tgId)
+	var tgID uint64 = 1
+	createdUser, err := addUser(tgID)
 	require.NoError(t, err)
 
 	resp, err := httpGetUserByID(int64(createdUser.ID))
@@ -140,7 +140,7 @@ func TestE2E_UserGetByID(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, createdUser.TgID, tgId)
+	assert.Equal(t, createdUser.TgID, tgID)
 }
 
 func TestE2E_UserGetByID_NotFound(t *testing.T) {
@@ -157,12 +157,12 @@ func TestE2E_UserGetByID_Validation(t *testing.T) {
 
 	type testCase struct {
 		name string
-		tgId string
+		tgID string
 	}
 
 	tests := []testCase{
 		{
-			"Отрицательный tgId",
+			"Отрицательный tgID",
 			"-1",
 		},
 		{
@@ -174,7 +174,7 @@ func TestE2E_UserGetByID_Validation(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", usersAPI(), tc.tgId))
+			resp, err := httpClient.Get(fmt.Sprintf("%s/%s", usersAPI(), tc.tgID))
 			require.NoError(t, err)
 			defer resp.Body.Close()
 

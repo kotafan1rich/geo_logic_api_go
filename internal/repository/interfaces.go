@@ -8,7 +8,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, user *model.User) (*model.User, error)
-	GetById(ctx context.Context, id uint64) (*model.User, error)
+	GetByID(ctx context.Context, id uint64) (*model.User, error)
 	Update(ctx context.Context, user *model.User) (*model.User, error)
 	Delete(ctx context.Context, id uint64) error
 }
@@ -39,7 +39,7 @@ type InfrastructureRepository interface {
 
 type InfrastructureTypeRepository interface {
 	Create(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error)
-	GetById(ctx context.Context, id uint64) (*model.InfrastructureType, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfrastructureType, error)
 	Update(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error)
 	Delete(ctx context.Context, id uint64) error
 }

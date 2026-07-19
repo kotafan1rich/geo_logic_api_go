@@ -55,7 +55,7 @@ func (s *eventService) Create(ctx context.Context, lat, long float64, date time.
 	return createdEvent, nil
 }
 
-func (s *eventService) GetById(ctx context.Context, id uint64) (*model.Event, error) {
+func (s *eventService) GetByID(ctx context.Context, id uint64) (*model.Event, error) {
 	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, event.ErrEventNotFound) {

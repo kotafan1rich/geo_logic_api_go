@@ -54,7 +54,7 @@ func (s *rentService) Create(ctx context.Context, lat, long float64, address str
 	return createdRent, nil
 }
 
-func (s *rentService) GetById(ctx context.Context, id uint64) (*model.Rent, error) {
+func (s *rentService) GetByID(ctx context.Context, id uint64) (*model.Rent, error) {
 	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentNotFound) {

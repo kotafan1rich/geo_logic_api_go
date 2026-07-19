@@ -4,14 +4,14 @@ import "github.com/gin-gonic/gin"
 
 type UserHandler interface {
 	Create(c *gin.Context)
-	GetById(c *gin.Context)
+	GetByID(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
 }
 
 type RentHandler interface {
 	Create(c *gin.Context)
-	GetById(c *gin.Context)
+	GetByID(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
 	Available(c *gin.Context)
@@ -19,7 +19,7 @@ type RentHandler interface {
 
 type EventHandler interface {
 	Create(c *gin.Context)
-	GetById(c *gin.Context)
+	GetByID(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
 	Near(c *gin.Context)
@@ -27,7 +27,7 @@ type EventHandler interface {
 
 type InfrastructureTypeHandler interface {
 	Create(c *gin.Context)
-	GetById(c *gin.Context)
+	GetByID(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
 }
@@ -36,7 +36,7 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 	user := router.Group("/users")
 	{
 		user.POST("/", userHandler.Create)
-		user.GET("/:id", userHandler.GetById)
+		user.GET("/:id", userHandler.GetByID)
 		user.PATCH("/:id", userHandler.Update)
 		user.DELETE("/:id", userHandler.Delete)
 	}
@@ -44,7 +44,7 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 	rent := router.Group("/rents")
 	{
 		rent.POST("/", rentHandler.Create)
-		rent.GET("/:id", rentHandler.GetById)
+		rent.GET("/:id", rentHandler.GetByID)
 		rent.PATCH("/:id", rentHandler.Update)
 		rent.DELETE("/:id", rentHandler.Delete)
 		rent.GET("/available", rentHandler.Available)
@@ -53,7 +53,7 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 	event := router.Group("/events")
 	{
 		event.POST("/", eventHandler.Create)
-		event.GET("/:id", eventHandler.GetById)
+		event.GET("/:id", eventHandler.GetByID)
 		event.PATCH("/:id", eventHandler.Update)
 		event.DELETE("/:id", eventHandler.Delete)
 		event.GET("/near", eventHandler.Near)
@@ -64,7 +64,7 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 		infraType := infra.Group("/types")
 		{
 			infraType.POST("/", typeHandler.Create)
-			infraType.GET("/:id", typeHandler.GetById)
+			infraType.GET("/:id", typeHandler.GetByID)
 			infraType.PATCH("/:id", typeHandler.Update)
 			infraType.DELETE("/:id", typeHandler.Delete)
 		}

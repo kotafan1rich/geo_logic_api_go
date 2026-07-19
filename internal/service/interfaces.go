@@ -8,15 +8,15 @@ import (
 )
 
 type UserService interface {
-	Create(ctx context.Context, tgId uint64) (*model.User, error)
-	GetById(ctx context.Context, id uint64) (*model.User, error)
-	Update(ctx context.Context, id, newTgId uint64) (*model.User, error)
+	Create(ctx context.Context, tgID uint64) (*model.User, error)
+	GetByID(ctx context.Context, id uint64) (*model.User, error)
+	Update(ctx context.Context, id, newTgID uint64) (*model.User, error)
 	Delete(ctx context.Context, id uint64) error
 }
 
 type RentService interface {
 	Create(ctx context.Context, lat, long float64, address string, info *string) (*model.Rent, error)
-	GetById(ctx context.Context, id uint64) (*model.Rent, error)
+	GetByID(ctx context.Context, id uint64) (*model.Rent, error)
 	Update(ctx context.Context, id uint64, lat, long *float64, address, info *string) (*model.Rent, error)
 	Delete(ctx context.Context, id uint64) error
 	Available(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Rent, error)
@@ -24,7 +24,7 @@ type RentService interface {
 
 type EventService interface {
 	Create(ctx context.Context, lat, long float64, date time.Time, info *string) (*model.Event, error)
-	GetById(ctx context.Context, id uint64) (*model.Event, error)
+	GetByID(ctx context.Context, id uint64) (*model.Event, error)
 	Update(ctx context.Context, id uint64, lat, long *float64, date *time.Time, info *string) (*model.Event, error)
 	Delete(ctx context.Context, id uint64) error
 	Near(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Event, error)
@@ -32,7 +32,7 @@ type EventService interface {
 
 type InfrastructureTypeService interface {
 	Create(ctx context.Context, slug, name string, weight float64, maxRadius uint16) (*model.InfrastructureType, error)
-	GetById(ctx context.Context, id uint64) (*model.InfrastructureType, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfrastructureType, error)
 	Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfrastructureType, error)
 	Delete(ctx context.Context, id uint64) error
 }

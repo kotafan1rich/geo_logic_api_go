@@ -36,7 +36,7 @@ func (h *eventHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToEventResponse(event))
 }
 
-func (h *eventHandler) GetById(c *gin.Context) {
+func (h *eventHandler) GetByID(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
@@ -44,7 +44,7 @@ func (h *eventHandler) GetById(c *gin.Context) {
 		return
 	}
 
-	event, err := h.service.GetById(c.Request.Context(), reqUri.ID)
+	event, err := h.service.GetByID(c.Request.Context(), reqUri.ID)
 	if err != nil {
 		_ = c.Error(err)
 		return

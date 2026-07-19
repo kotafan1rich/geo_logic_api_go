@@ -26,8 +26,8 @@ func NewUserService(log Logger, repo repository.UserRepository) service.UserServ
 	return &userService{log: log, repo: repo}
 }
 
-func (s *userService) Create(ctx context.Context, tgId uint64) (*model.User, error) {
-	newUser := &model.User{TgID: tgId}
+func (s *userService) Create(ctx context.Context, tgID uint64) (*model.User, error) {
+	newUser := &model.User{TgID: tgID}
 
 	newUser, err := s.repo.Create(ctx, newUser)
 	if err != nil {
@@ -41,8 +41,8 @@ func (s *userService) Create(ctx context.Context, tgId uint64) (*model.User, err
 	return newUser, nil
 }
 
-func (s *userService) GetById(ctx context.Context, id uint64) (*model.User, error) {
-	result, err := s.repo.GetById(ctx, id)
+func (s *userService) GetByID(ctx context.Context, id uint64) (*model.User, error) {
+	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {
 			s.log.Warn("user not found", "error", err)
@@ -54,8 +54,8 @@ func (s *userService) GetById(ctx context.Context, id uint64) (*model.User, erro
 	return result, nil
 }
 
-func (s *userService) Update(ctx context.Context, id, newTgId uint64) (*model.User, error) {
-	oldUser, err := s.GetById(ctx, id)
+func (s *userService) Update(ctx context.Context, id, newTgID uint64) (*model.User, error) {
+	oldUser, err := s.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {
 			s.log.Warn("user not found", "error", err)
@@ -65,8 +65,8 @@ func (s *userService) Update(ctx context.Context, id, newTgId uint64) (*model.Us
 		return nil, err
 	}
 	s.log.Info("user found", "user", oldUser)
-	if oldUser.TgID != newTgId {
-		oldUser.TgID = newTgId
+	if oldUser.TgID != newTgID {
+		oldUser.TgID = newTgID
 		oldUser, err = s.repo.Update(ctx, oldUser)
 		if err != nil {
 			if errors.Is(err, user.ErrUserAlreadyExists) {

@@ -44,8 +44,8 @@ func (t *typeService) Create(ctx context.Context, slug, name string, weight floa
 	return newType, nil
 }
 
-func (t *typeService) GetById(ctx context.Context, id uint64) (*model.InfrastructureType, error) {
-	result, err := t.repo.GetById(ctx, id)
+func (t *typeService) GetByID(ctx context.Context, id uint64) (*model.InfrastructureType, error) {
+	result, err := t.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, infra.ErrInfrastructureTypeNotFound) {
 			t.log.Warn("type not found", "error", err)
@@ -58,7 +58,7 @@ func (t *typeService) GetById(ctx context.Context, id uint64) (*model.Infrastruc
 }
 
 func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfrastructureType, error) {
-	oldType, err := t.repo.GetById(ctx, id)
+	oldType, err := t.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, infra.ErrInfrastructureTypeNotFound) {
 			t.log.Warn("type not found", "error", err)

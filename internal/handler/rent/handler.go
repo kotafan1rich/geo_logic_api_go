@@ -36,7 +36,7 @@ func (h *rentHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToRentResponse(rent))
 }
 
-func (h *rentHandler) GetById(c *gin.Context) {
+func (h *rentHandler) GetByID(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
@@ -44,7 +44,7 @@ func (h *rentHandler) GetById(c *gin.Context) {
 		return
 	}
 
-	rent, err := h.service.GetById(c.Request.Context(), reqUri.ID)
+	rent, err := h.service.GetByID(c.Request.Context(), reqUri.ID)
 	if err != nil {
 		_ = c.Error(err)
 		return
