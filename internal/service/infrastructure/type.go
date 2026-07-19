@@ -83,7 +83,7 @@ func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string,
 	if name != nil {
 		err = oldType.UpdateName(*name)
 		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidSlug) {
+			if errors.Is(err, apperrors.ErrInvalidName) {
 				t.log.Warn("validation error", "error", err)
 				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 			}
@@ -105,15 +105,7 @@ func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string,
 	}
 
 	if maxRadius != nil {
-		err = oldType.UpdateWeight(*weight)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidWeight) {
-				t.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			t.log.Error("error updating type", "error", err)
-			return nil, err
-		}
+		oldType.UpdateMaxRadius(*maxRadius)
 	}
 
 	updatedType, err := t.repo.Update(ctx, oldType)
@@ -131,8 +123,8 @@ func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string,
 func (t *typeService) Delete(ctx context.Context, id uint64) error {
 	err := t.repo.Delete(ctx, id)
 	if err != nil {
-		if errors.Is(err, infrastructure.ErrInfrastructureNotFound) {
-			t.log.Warn("user not found", "error", err)
+		if errors.Is(err, infrastructure.ErrInfrastructureTypeNotFound) {
+			t.log.Warn("type not found", "error", err)
 			return apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
 		t.log.Error("error deleting type", "error", err)

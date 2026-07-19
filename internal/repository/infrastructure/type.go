@@ -48,7 +48,12 @@ func (t *infrastructureTypeRepository) GetById(ctx context.Context, id uint64) (
 
 func (t *infrastructureTypeRepository) Update(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error) {
 	typeModel := dbmodel.ToTypeModel(infraType)
-	result := t.db.GORM().WithContext(ctx).Model(&typeModel).Select("*").Updates(&typeModel)
+	result := t.db.GORM().WithContext(ctx).Model(&dbmodel.InfrastructureType{}).Where("id = ?", infraType.ID).Updates(map[string]any{
+		"slug":       typeModel.Slug,
+		"name":       typeModel.Name,
+		"weight":     typeModel.Weight,
+		"max_radius": typeModel.MaxRadius,
+	})
 	if result.Error != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {
@@ -60,7 +65,7 @@ func (t *infrastructureTypeRepository) Update(ctx context.Context, infraType *mo
 	if result.RowsAffected == 0 {
 		return nil, ErrInfrastructureTypeNotFound
 	}
-	return dbmodel.ToType(&typeModel), nil
+	return infraType, nil
 }
 
 func (t *infrastructureTypeRepository) Delete(ctx context.Context, id uint64) error {
