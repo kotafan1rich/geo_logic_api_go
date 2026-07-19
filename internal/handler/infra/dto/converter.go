@@ -2,7 +2,7 @@ package dto
 
 import "github.com/kotafan1rich/geo_logic_api_go/internal/model"
 
-func ToTypeResponse(infraType *model.InfrastructureType) TypeResponse {
+func ToTypeResponse(infraType *model.InfraType) TypeResponse {
 	return TypeResponse{
 		ID:        infraType.ID,
 		Slug:      infraType.Slug,

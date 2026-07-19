@@ -2,7 +2,7 @@ package dbmodel
 
 import "github.com/kotafan1rich/geo_logic_api_go/internal/database"
 
-type InfrastructureType struct {
+type InfraType struct {
 	database.Base
 
 	Slug      string  `gorm:"column:slug;uniqueIndex;type:varchar;size:255;not null"`
