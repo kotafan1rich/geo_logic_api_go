@@ -69,5 +69,4 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 			infraType.DELETE("/:id", typeHandler.Delete)
 		}
 	}
-
 }
