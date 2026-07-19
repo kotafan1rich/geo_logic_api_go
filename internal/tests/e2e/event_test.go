@@ -489,7 +489,7 @@ func TestE2E_EventDelete_Validation(t *testing.T) {
 	}
 }
 
-func TestE2E_EventAvailable(t *testing.T) {
+func TestE2E_EventNear(t *testing.T) {
 	clearTables(t) // Очищаем базу перед тестом
 
 	// 1. Координаты центра (например, центр Питера)
@@ -528,7 +528,7 @@ func TestE2E_EventAvailable(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			url := fmt.Sprintf("%s/available?lat=%f&long=%f&radius=%d",
+			url := fmt.Sprintf("%s/near?lat=%f&long=%f&radius=%d",
 				eventsAPI(), centerLat, centerLong, tc.searchRadius,
 			)
 
@@ -551,7 +551,7 @@ func TestE2E_EventAvailable(t *testing.T) {
 	}
 }
 
-func TestE2E_EventAvailable_Validation(t *testing.T) {
+func TestE2E_EventNear_Validation(t *testing.T) {
 	clearTables(t)
 
 	type testCase struct {
@@ -612,7 +612,7 @@ func TestE2E_EventAvailable_Validation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			url := fmt.Sprintf("%s/available?%s", eventsAPI(), tc.queryParams)
+			url := fmt.Sprintf("%s/near?%s", eventsAPI(), tc.queryParams)
 
 			resp, err := httpClient.Get(url)
 			require.NoError(t, err)

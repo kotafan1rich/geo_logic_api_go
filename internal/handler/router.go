@@ -56,7 +56,7 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 		event.GET("/:id", eventHandler.GetById)
 		event.PATCH("/:id", eventHandler.Update)
 		event.DELETE("/:id", eventHandler.Delete)
-		event.GET("/available", eventHandler.Near)
+		event.GET("/near", eventHandler.Near)
 	}
 
 	infrastructure := router.Group("/infrastructure")
