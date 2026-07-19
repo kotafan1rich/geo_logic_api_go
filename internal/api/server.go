@@ -16,10 +16,10 @@ type mainHandler struct {
 	userHandler      handler.UserHandler
 	rentHandler      handler.RentHandler
 	eventHandler     handler.EventHandler
-	infraTypeHandler handler.InfrastructureTypeHandler
+	infraTypeHandler handler.InfraTypeHandler
 }
 
-func NewMainHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler, eventHandler handler.EventHandler, infraTypeHandler handler.InfrastructureTypeHandler) Handler {
+func NewMainHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler, eventHandler handler.EventHandler, infraTypeHandler handler.InfraTypeHandler) Handler {
 	return &mainHandler{log: log, userHandler: userHandler, rentHandler: rentHandler, eventHandler: eventHandler, infraTypeHandler: infraTypeHandler}
 }
 

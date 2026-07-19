@@ -2,20 +2,20 @@ package model
 
 import "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 
-type InfrastructureObject struct {
+type InfraObject struct {
 	ID       uint64
 	GeoPoint GeoPoint
 	Address  string
 	Name     *string
 
-	Type InfrastructureType
+	Type InfraType
 }
 
-func NewInfrastructureObject(geopoint GeoPoint, address string, name *string, infraType InfrastructureType) (*InfrastructureObject, error) {
+func NewInfraObject(geopoint GeoPoint, address string, name *string, infraType InfraType) (*InfraObject, error) {
 	if address == "" {
 		return nil, errors.ErrInvalidAddress
 	}
-	return &InfrastructureObject{
+	return &InfraObject{
 		GeoPoint: geopoint,
 		Address:  address,
 		Name:     name,
@@ -23,7 +23,7 @@ func NewInfrastructureObject(geopoint GeoPoint, address string, name *string, in
 	}, nil
 }
 
-func (o *InfrastructureObject) UpdateAddress(address string) error {
+func (o *InfraObject) UpdateAddress(address string) error {
 	if address == "" {
 		return errors.ErrInvalidAddress
 	}
@@ -31,10 +31,10 @@ func (o *InfrastructureObject) UpdateAddress(address string) error {
 	return nil
 }
 
-func (o *InfrastructureObject) UpdateName(name *string) {
+func (o *InfraObject) UpdateName(name *string) {
 	o.Name = name
 }
 
-func (o *InfrastructureObject) UpdateType(infraType InfrastructureType) {
+func (o *InfraObject) UpdateType(infraType InfraType) {
 	o.Type = infraType
 }

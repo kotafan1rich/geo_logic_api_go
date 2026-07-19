@@ -25,14 +25,14 @@ type EventHandler interface {
 	Near(c *gin.Context)
 }
 
-type InfrastructureTypeHandler interface {
+type InfraTypeHandler interface {
 	Create(c *gin.Context)
 	GetByID(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
 }
 
-func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler, typeHandler InfrastructureTypeHandler) {
+func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler, typeHandler InfraTypeHandler) {
 	user := router.Group("/users")
 	{
 		user.POST("/", userHandler.Create)

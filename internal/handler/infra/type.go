@@ -12,10 +12,10 @@ import (
 )
 
 type typeHandler struct {
-	service service.InfrastructureTypeService
+	service service.InfraTypeService
 }
 
-func NewHandler(service service.InfrastructureTypeService) *typeHandler {
+func NewHandler(service service.InfraTypeService) *typeHandler {
 	return &typeHandler{service: service}
 }
 

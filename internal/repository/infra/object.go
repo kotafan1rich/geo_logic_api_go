@@ -15,11 +15,11 @@ type infraRepository struct {
 	db database.DB
 }
 
-func NewInfrastructureRepository(db database.DB) *infraRepository {
+func NewInfraRepository(db database.DB) *infraRepository {
 	return &infraRepository{db: db}
 }
 
-func (r *infraRepository) Create(ctx context.Context, infra *model.InfrastructureObject) (*model.InfrastructureObject, error) {
+func (r *infraRepository) Create(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error) {
 	point := database.DBGeoPoint(infra.GeoPoint)
 	wktPoint, err := point.Value()
 	if err != nil {
@@ -43,9 +43,9 @@ func (r *infraRepository) Create(ctx context.Context, infra *model.Infrastructur
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case database.ErrPgUniqueViolation:
-				return nil, ErrInfrastructureAlreadyExists
+				return nil, ErrInfraAlreadyExists
 			case database.PgErrForeignKeyViolation:
-				return nil, ErrInfrastructureTypeNotFound
+				return nil, ErrInfraTypeNotFound
 			}
 		}
 		return nil, err
@@ -54,21 +54,21 @@ func (r *infraRepository) Create(ctx context.Context, infra *model.Infrastructur
 	return infra, nil
 }
 
-func (r *infraRepository) GetByID(ctx context.Context, id uint64) (*model.InfrastructureObject, error) {
-	var infra dbmodel.InfrastructureObject
+func (r *infraRepository) GetByID(ctx context.Context, id uint64) (*model.InfraObject, error) {
+	var infra dbmodel.InfraObject
 	err := r.db.GORM().WithContext(ctx).First(&infra, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrInfrastructureNotFound
+			return nil, ErrInfraNotFound
 		}
 		return nil, err
 	}
 	return dbmodel.ToObject(&infra), err
 }
 
-func (r *infraRepository) Update(ctx context.Context, infra *model.InfrastructureObject) (*model.InfrastructureObject, error) {
+func (r *infraRepository) Update(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error) {
 	infraModel := dbmodel.ToObjectModel(infra)
-	result := r.db.GORM().WithContext(ctx).Model(&dbmodel.InfrastructureObject{}).Where("id = ?", infraModel.ID).Updates(map[string]any{
+	result := r.db.GORM().WithContext(ctx).Model(&dbmodel.InfraObject{}).Where("id = ?", infraModel.ID).Updates(map[string]any{
 		"address":  infraModel.Address,
 		"name":     infraModel.Name,
 		"type_id":  infraModel.TypeID,
@@ -79,36 +79,36 @@ func (r *infraRepository) Update(ctx context.Context, infra *model.Infrastructur
 		if errors.As(result.Error, &pgErr) {
 			switch pgErr.Code {
 			case database.ErrPgUniqueViolation:
-				return nil, ErrInfrastructureAlreadyExists
+				return nil, ErrInfraAlreadyExists
 			case database.PgErrForeignKeyViolation:
-				return nil, ErrInfrastructureTypeNotFound
+				return nil, ErrInfraTypeNotFound
 			}
 		}
 		return nil, result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return nil, ErrInfrastructureNotFound
+		return nil, ErrInfraNotFound
 	}
 	return infra, nil
 }
 
 func (r *infraRepository) Delete(ctx context.Context, id uint64) error {
-	result := r.db.GORM().WithContext(ctx).Delete(&dbmodel.InfrastructureObject{}, id)
+	result := r.db.GORM().WithContext(ctx).Delete(&dbmodel.InfraObject{}, id)
 	if result.Error != nil {
 		return result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return ErrInfrastructureNotFound
+		return ErrInfraNotFound
 	}
 	return nil
 }
 
-func (r *infraRepository) Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.InfrastructureObject, error) {
-	var infras []dbmodel.InfrastructureObject
+func (r *infraRepository) Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.InfraObject, error) {
+	var infras []dbmodel.InfraObject
 
-	err := r.db.GORM().WithContext(ctx).Model(&dbmodel.InfrastructureObject{}).Where(
+	err := r.db.GORM().WithContext(ctx).Model(&dbmodel.InfraObject{}).Where(
 		"ST_DWithin(location, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ?)",
 		geopoint.Long,
 		geopoint.Lat,

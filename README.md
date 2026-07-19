@@ -55,7 +55,7 @@ GeoLogicApi предоставляет REST API для:
 - `created_at` — datetime
 - `updated_at` — datetime
 
-### Infrastructure
+### Infra
 - `id` — PK
 - `location` — geometry(Point, 4326)
 - `address` — string
@@ -64,7 +64,7 @@ GeoLogicApi предоставляет REST API для:
 - `created_at` — datetime
 - `updated_at` — datetime
 
-### InfrastructureType
+### InfraType
 - `id` — PK
 - `slug` — string, unique identifier for code usage (e.g. `subway`, `cafe`)
 - `name` — string, display name (e.g. `Метро`)
@@ -87,13 +87,13 @@ GeoLogicApi предоставляет REST API для:
 
 ## Что планируется сделать
 
-- Добавить модели и репозитории для оставшихся сущностей: `Events`, `Infrastructure`, `Users_locations`.
+- Добавить модели и репозитории для оставшихся сущностей: `Events`, `Infra`, `Users_locations`.
 - Создать пространственные индексы `GIST` для высокопроизводительных гео-запросов.
 - Реализовать алгоритм расчёта рейтинга местности (агрегация близости инфраструктуры, событий, плотности и т.п.).
 - Добавить аутентификацию/авторизацию (если потребуется).
 - Расширить unit-тестирование бизнес-логики сервисов.
 - Подготовить API документацию (OpenAPI/Swagger).
-- Расширить документацию по новым сущностям: `Events`, `Infrastructure`, `Users_locations`, `InfrastructureType`.
+- Расширить документацию по новым сущностям: `Events`, `Infra`, `Users_locations`, `InfraType`.
 
 ## Конфигурация и запуск
 

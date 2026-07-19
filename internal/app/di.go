@@ -29,12 +29,12 @@ type diContainer struct {
 	userRepo      repository.UserRepository
 	rentRepo      repository.RentRepository
 	eventRepo     repository.EventRepository
-	infraTypeRepo repository.InfrastructureTypeRepository
+	infraTypeRepo repository.InfraTypeRepository
 
 	userService      service.UserService
 	rentService      service.RentService
 	eventService     service.EventService
-	infraTypeService service.InfrastructureTypeService
+	infraTypeService service.InfraTypeService
 
 	handler api.Handler
 
@@ -83,9 +83,9 @@ func (d *diContainer) EventRepo() repository.EventRepository {
 	return d.eventRepo
 }
 
-func (d *diContainer) InfrastructureTypeRepo() repository.InfrastructureTypeRepository {
+func (d *diContainer) InfraTypeRepo() repository.InfraTypeRepository {
 	if d.infraTypeRepo == nil {
-		d.infraTypeRepo = infrarepo.NewInfrastructureTypeRepository(d.DB())
+		d.infraTypeRepo = infrarepo.NewInfraTypeRepository(d.DB())
 	}
 
 	return d.infraTypeRepo
@@ -113,9 +113,9 @@ func (d *diContainer) EventService() service.EventService {
 	return d.eventService
 }
 
-func (d *diContainer) InfrastructureTypeService() service.InfrastructureTypeService {
+func (d *diContainer) InfraTypeService() service.InfraTypeService {
 	if d.infraTypeService == nil {
-		d.infraTypeService = infraservice.NewTypeService(d.Logger(), d.InfrastructureTypeRepo())
+		d.infraTypeService = infraservice.NewTypeService(d.Logger(), d.InfraTypeRepo())
 	}
 	return d.infraTypeService
 }
@@ -125,7 +125,7 @@ func (d *diContainer) Handler() api.Handler {
 		userHandler := user.NewHandler(d.UserService())
 		rentHandler := rent.NewHandler(d.RentService())
 		eventHandler := event.NewHandler(d.EventService())
-		infraTypeHandler := infra.NewHandler(d.InfrastructureTypeService())
+		infraTypeHandler := infra.NewHandler(d.InfraTypeService())
 		d.handler = api.NewMainHandler(d.Logger(), userHandler, rentHandler, eventHandler, infraTypeHandler)
 	}
 

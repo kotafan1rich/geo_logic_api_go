@@ -275,22 +275,22 @@ paths:
   /infra:
     post:
       summary: Create infra
-      operationId: createInfrastructure
+      operationId: createInfra
       tags:
-        - Infrastructure
+        - Infra
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateInfrastructureRequest'
+              $ref: '#/components/schemas/CreateInfraRequest'
       responses:
         '201':
-          description: Infrastructure created successfully
+          description: Infra created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InfrastructureResponse'
+                $ref: '#/components/schemas/InfraResponse'
         '400':
           description: Validation error in the request body
           content:
@@ -303,9 +303,9 @@ paths:
   /infra/near:
     get:
       summary: Get infra in the specified area
-      operationId: getInfrastructureNear
+      operationId: getInfraNear
       tags:
-        - Infrastructure
+        - Infra
       parameters:
         - name: lat
           in: query
@@ -339,16 +339,16 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/InfrastructureResponse'
+                  $ref: '#/components/schemas/InfraResponse'
         '400':
           description: Validation error in the request parameters
 
   /infra/{id}:
     get:
       summary: Get infra by ID
-      operationId: getInfrastructureByID
+      operationId: getInfraByID
       tags:
-        - Infrastructure
+        - Infra
       parameters:
         - name: id
           in: path
@@ -364,16 +364,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InfrastructureResponse'
+                $ref: '#/components/schemas/InfraResponse'
         '404':
-          description: Infrastructure not found
+          description: Infra not found
         '400':
           description: Validation error in the request parameters
     patch:
       summary: Update infra
-      operationId: updateInfrastructure
+      operationId: updateInfra
       tags:
-        - Infrastructure
+        - Infra
       parameters:
         - name: id
           in: path
@@ -388,23 +388,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateInfrastructureRequest'
+              $ref: '#/components/schemas/UpdateInfraRequest'
       responses:
         '200':
-          description: Infrastructure data updated successfully
+          description: Infra data updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InfrastructureResponse'
+                $ref: '#/components/schemas/InfraResponse'
         '400':
           description: Validation error in the request parameters
         '404':
-          description: Infrastructure not found
+          description: Infra not found
     delete:
       summary: Delete infra
-      operationId: deleteInfrastructure
+      operationId: deleteInfra
       tags:
-        - Infrastructure
+        - Infra
       parameters:
         - name: id
           in: path
@@ -416,31 +416,31 @@ paths:
             example: 1
       responses:
         '204':
-          description: Infrastructure deleted successfully (no response body)
+          description: Infra deleted successfully (no response body)
         '404':
-          description: Infrastructure not found
+          description: Infra not found
         '400':
           description: Validation error in the request parameters
 
   /infra/types:
     post:
       summary: Create infra type
-      operationId: createInfrastructureType
+      operationId: createInfraType
       tags:
-        - InfrastructureType
+        - InfraType
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateInfrastructureTypeRequest'
+              $ref: '#/components/schemas/CreateInfraTypeRequest'
       responses:
         '201':
-          description: Infrastructure type created successfully
+          description: Infra type created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InfrastructureTypeResponse'
+                $ref: '#/components/schemas/InfraTypeResponse'
         '400':
           description: Validation error in the request body
           content:
@@ -453,9 +453,9 @@ paths:
   /infra/types/{id}:
     get:
       summary: Get infra type by ID
-      operationId: getInfrastructureTypeByID
+      operationId: getInfraTypeByID
       tags:
-        - InfrastructureType
+        - InfraType
       parameters:
         - name: id
           in: path
@@ -471,16 +471,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InfrastructureTypeResponse'
+                $ref: '#/components/schemas/InfraTypeResponse'
         '404':
-          description: Infrastructure type not found
+          description: Infra type not found
         '400':
           description: Validation error in the request parameters
     patch:
       summary: Update infra type
-      operationId: updateInfrastructureType
+      operationId: updateInfraType
       tags:
-        - InfrastructureType
+        - InfraType
       parameters:
         - name: id
           in: path
@@ -495,23 +495,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateInfrastructureTypeRequest'
+              $ref: '#/components/schemas/UpdateInfraTypeRequest'
       responses:
         '200':
-          description: Infrastructure type updated successfully
+          description: Infra type updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InfrastructureTypeResponse'
+                $ref: '#/components/schemas/InfraTypeResponse'
         '400':
           description: Validation error in the request parameters
         '404':
-          description: Infrastructure type not found
+          description: Infra type not found
     delete:
       summary: Delete infra type
-      operationId: deleteInfrastructureType
+      operationId: deleteInfraType
       tags:
-        - InfrastructureType
+        - InfraType
       parameters:
         - name: id
           in: path
@@ -523,9 +523,9 @@ paths:
             example: 1
       responses:
         '204':
-          description: Infrastructure type deleted successfully (no response body)
+          description: Infra type deleted successfully (no response body)
         '404':
-          description: Infrastructure type not found
+          description: Infra type not found
         '400':
           description: Validation error in the request parameters
 
@@ -1020,7 +1020,7 @@ components:
           example: "Additional information about the event"
           description: Additional information about the event
 
-    CreateInfrastructureRequest:
+    CreateInfraRequest:
       type: object
       required:
         - lat
@@ -1051,7 +1051,7 @@ components:
           example: "Additional information about the infra"
           description: Additional information about the infra
 
-    UpdateInfrastructureRequest:
+    UpdateInfraRequest:
       type: object
       properties:
         lat:
@@ -1077,7 +1077,7 @@ components:
           example: "Updated additional information about the infra"
           description: Updated additional information about the infra
 
-    InfrastructureResponse:
+    InfraResponse:
       type: object
       properties:
         id:
@@ -1169,7 +1169,7 @@ components:
           example: "2026-07-13T12:30:00Z"
           description: Last update timestamp
 
-    CreateInfrastructureTypeRequest:
+    CreateInfraTypeRequest:
       type: object
       required:
         - slug
@@ -1194,7 +1194,7 @@ components:
           example: 1000
           description: Maximum effective radius of the infra type in meters
 
-    UpdateInfrastructureTypeRequest:
+    UpdateInfraTypeRequest:
       type: object
       properties:
         slug:
@@ -1216,7 +1216,7 @@ components:
           example: 1200
           description: Maximum effective radius of the infra type in meters
 
-    InfrastructureTypeResponse:
+    InfraTypeResponse:
       type: object
       properties:
         id:

@@ -2,7 +2,7 @@ package model
 
 import "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 
-type InfrastructureType struct {
+type InfraType struct {
 	ID        uint64
 	Slug      string
 	Name      string
@@ -10,7 +10,7 @@ type InfrastructureType struct {
 	MaxRadius uint16
 }
 
-func NewInfrastructureType(slug, name string, weight float64, maxRadius uint16) (*InfrastructureType, error) {
+func NewInfraType(slug, name string, weight float64, maxRadius uint16) (*InfraType, error) {
 	if slug == "" {
 		return nil, errors.ErrInvalidSlug
 	}
@@ -20,7 +20,7 @@ func NewInfrastructureType(slug, name string, weight float64, maxRadius uint16) 
 	if weight <= 0 {
 		return nil, errors.ErrInvalidWeight
 	}
-	return &InfrastructureType{
+	return &InfraType{
 		Slug:      slug,
 		Name:      name,
 		Weight:    weight,
@@ -28,7 +28,7 @@ func NewInfrastructureType(slug, name string, weight float64, maxRadius uint16) 
 	}, nil
 }
 
-func (t *InfrastructureType) UpdateSlug(slug string) error {
+func (t *InfraType) UpdateSlug(slug string) error {
 	if slug == "" {
 		return errors.ErrInvalidSlug
 	}
@@ -36,7 +36,7 @@ func (t *InfrastructureType) UpdateSlug(slug string) error {
 	return nil
 }
 
-func (t *InfrastructureType) UpdateName(name string) error {
+func (t *InfraType) UpdateName(name string) error {
 	if name == "" {
 		return errors.ErrInvalidName
 	}
@@ -44,7 +44,7 @@ func (t *InfrastructureType) UpdateName(name string) error {
 	return nil
 }
 
-func (t *InfrastructureType) UpdateWeight(weight float64) error {
+func (t *InfraType) UpdateWeight(weight float64) error {
 	if weight <= 0 {
 		return errors.ErrInvalidWeight
 	}
@@ -52,6 +52,6 @@ func (t *InfrastructureType) UpdateWeight(weight float64) error {
 	return nil
 }
 
-func (t *InfrastructureType) UpdateMaxRadius(maxRadius uint16) {
+func (t *InfraType) UpdateMaxRadius(maxRadius uint16) {
 	t.MaxRadius = maxRadius
 }

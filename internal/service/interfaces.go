@@ -30,9 +30,9 @@ type EventService interface {
 	Near(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Event, error)
 }
 
-type InfrastructureTypeService interface {
-	Create(ctx context.Context, slug, name string, weight float64, maxRadius uint16) (*model.InfrastructureType, error)
-	GetByID(ctx context.Context, id uint64) (*model.InfrastructureType, error)
-	Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfrastructureType, error)
+type InfraTypeService interface {
+	Create(ctx context.Context, slug, name string, weight float64, maxRadius uint16) (*model.InfraType, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfraType, error)
+	Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfraType, error)
 	Delete(ctx context.Context, id uint64) error
 }
