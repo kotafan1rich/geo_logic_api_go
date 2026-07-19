@@ -272,9 +272,9 @@ paths:
         '400':
           description: Validation error in the request parameters
 
-  /infrastructure:
+  /infra:
     post:
-      summary: Create infrastructure
+      summary: Create infra
       operationId: createInfrastructure
       tags:
         - Infrastructure
@@ -298,11 +298,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
-          description: Conflict error when trying to create infrastructure that already exists
+          description: Conflict error when trying to create infra that already exists
 
-  /infrastructure/near:
+  /infra/near:
     get:
-      summary: Get infrastructure in the specified area
+      summary: Get infra in the specified area
       operationId: getInfrastructureNear
       tags:
         - Infrastructure
@@ -310,7 +310,7 @@ paths:
         - name: lat
           in: query
           required: true
-          description: Latitude of the center point for searching infrastructure
+          description: Latitude of the center point for searching infra
           schema:
             type: number
             format: float
@@ -318,7 +318,7 @@ paths:
         - name: long
           in: query
           required: true
-          description: Longitude of the center point for searching infrastructure
+          description: Longitude of the center point for searching infra
           schema:
             type: number
             format: float
@@ -333,7 +333,7 @@ paths:
             example: 5000
       responses:
         '200':
-          description: Successful response with a list of infrastructure objects
+          description: Successful response with a list of infra objects
           content:
             application/json:
               schema:
@@ -343,9 +343,9 @@ paths:
         '400':
           description: Validation error in the request parameters
 
-  /infrastructure/{id}:
+  /infra/{id}:
     get:
-      summary: Get infrastructure by ID
+      summary: Get infra by ID
       operationId: getInfrastructureById
       tags:
         - Infrastructure
@@ -353,14 +353,14 @@ paths:
         - name: id
           in: path
           required: true
-          description: Internal infrastructure ID
+          description: Internal infra ID
           schema:
             type: integer
             format: int64
             example: 1
       responses:
         '200':
-          description: Successful response with infrastructure data
+          description: Successful response with infra data
           content:
             application/json:
               schema:
@@ -370,7 +370,7 @@ paths:
         '400':
           description: Validation error in the request parameters
     patch:
-      summary: Update infrastructure
+      summary: Update infra
       operationId: updateInfrastructure
       tags:
         - Infrastructure
@@ -378,7 +378,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Internal infrastructure ID
+          description: Internal infra ID
           schema:
             type: integer
             format: int64
@@ -401,7 +401,7 @@ paths:
         '404':
           description: Infrastructure not found
     delete:
-      summary: Delete infrastructure
+      summary: Delete infra
       operationId: deleteInfrastructure
       tags:
         - Infrastructure
@@ -409,7 +409,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Internal infrastructure ID
+          description: Internal infra ID
           schema:
             type: integer
             format: int64
@@ -422,9 +422,9 @@ paths:
         '400':
           description: Validation error in the request parameters
 
-  /infrastructure/types:
+  /infra/types:
     post:
-      summary: Create infrastructure type
+      summary: Create infra type
       operationId: createInfrastructureType
       tags:
         - InfrastructureType
@@ -448,11 +448,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
-          description: Conflict error when trying to create an infrastructure type that already exists
+          description: Conflict error when trying to create an infra type that already exists
 
-  /infrastructure/types/{id}:
+  /infra/types/{id}:
     get:
-      summary: Get infrastructure type by ID
+      summary: Get infra type by ID
       operationId: getInfrastructureTypeById
       tags:
         - InfrastructureType
@@ -460,14 +460,14 @@ paths:
         - name: id
           in: path
           required: true
-          description: Internal infrastructure type ID
+          description: Internal infra type ID
           schema:
             type: integer
             format: int64
             example: 1
       responses:
         '200':
-          description: Successful response with infrastructure type data
+          description: Successful response with infra type data
           content:
             application/json:
               schema:
@@ -477,7 +477,7 @@ paths:
         '400':
           description: Validation error in the request parameters
     patch:
-      summary: Update infrastructure type
+      summary: Update infra type
       operationId: updateInfrastructureType
       tags:
         - InfrastructureType
@@ -485,7 +485,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Internal infrastructure type ID
+          description: Internal infra type ID
           schema:
             type: integer
             format: int64
@@ -508,7 +508,7 @@ paths:
         '404':
           description: Infrastructure type not found
     delete:
-      summary: Delete infrastructure type
+      summary: Delete infra type
       operationId: deleteInfrastructureType
       tags:
         - InfrastructureType
@@ -516,7 +516,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Internal infrastructure type ID
+          description: Internal infra type ID
           schema:
             type: integer
             format: int64
@@ -1032,24 +1032,24 @@ components:
           type: number
           format: float
           example: 37.7749
-          description: Latitude of the infrastructure location
+          description: Latitude of the infra location
         long:
           type: number
           format: float
           example: -122.4194
-          description: Longitude of the infrastructure location
+          description: Longitude of the infra location
         address:
           type: string
           example: "190000, Санкт-Петербург, Невский проспект, д. 2"
-          description: Address of the infrastructure object
+          description: Address of the infra object
         type:
           type: string
           example: "shop"
-          description: Type of infrastructure entity
+          description: Type of infra entity
         info:
           type: string
-          example: "Additional information about the infrastructure"
-          description: Additional information about the infrastructure
+          example: "Additional information about the infra"
+          description: Additional information about the infra
 
     UpdateInfrastructureRequest:
       type: object
@@ -1058,24 +1058,24 @@ components:
           type: number
           format: float
           example: 37.7749
-          description: New latitude of the infrastructure location
+          description: New latitude of the infra location
         long:
           type: number
           format: float
           example: -122.4194
-          description: New longitude of the infrastructure location
+          description: New longitude of the infra location
         address:
           type: string
           example: "190000, Санкт-Петербург, Невский проспект, д. 2"
-          description: New address of the infrastructure object
+          description: New address of the infra object
         type:
           type: string
           example: "cafe"
-          description: New type of infrastructure entity
+          description: New type of infra entity
         info:
           type: string
-          example: "Updated additional information about the infrastructure"
-          description: Updated additional information about the infrastructure
+          example: "Updated additional information about the infra"
+          description: Updated additional information about the infra
 
     InfrastructureResponse:
       type: object
@@ -1084,29 +1084,29 @@ components:
           type: integer
           format: int64
           example: 1
-          description: Internal infrastructure ID
+          description: Internal infra ID
         lat:
           type: number
           format: float
           example: 37.7749
-          description: Latitude of the infrastructure location
+          description: Latitude of the infra location
         long:
           type: number
           format: float
           example: -122.4194
-          description: Longitude of the infrastructure location
+          description: Longitude of the infra location
         address:
           type: string
           example: "190000, Санкт-Петербург, Невский проспект, д. 2"
-          description: Address of the infrastructure object
+          description: Address of the infra object
         type:
           type: string
           example: "shop"
-          description: Type of infrastructure entity
+          description: Type of infra entity
         info:
           type: string
-          example: "Additional information about the infrastructure"
-          description: Additional information about the infrastructure
+          example: "Additional information about the infra"
+          description: Additional information about the infra
 
     CreateUserLocationRequest:
       type: object
@@ -1133,7 +1133,7 @@ components:
           description: New internal identifier of the location related to the user
         location_type:
           type: string
-          example: "infrastructure"
+          example: "infra"
           description: New type of the related location entity
 
     UserLocationResponse:
@@ -1178,11 +1178,11 @@ components:
         slug:
           type: string
           example: "subway"
-          description: Identifier for the infrastructure type used in code
+          description: Identifier for the infra type used in code
         name:
           type: string
           example: "Метро"
-          description: Russian display name for the infrastructure type
+          description: Russian display name for the infra type
         weight:
           type: number
           format: float
@@ -1192,7 +1192,7 @@ components:
           type: integer
           format: uint16
           example: 1000
-          description: Maximum effective radius of the infrastructure type in meters
+          description: Maximum effective radius of the infra type in meters
 
     UpdateInfrastructureTypeRequest:
       type: object
@@ -1200,11 +1200,11 @@ components:
         slug:
           type: string
           example: "subway"
-          description: Identifier for the infrastructure type used in code
+          description: Identifier for the infra type used in code
         name:
           type: string
           example: "Метро"
-          description: Russian display name for the infrastructure type
+          description: Russian display name for the infra type
         weight:
           type: number
           format: float
@@ -1214,7 +1214,7 @@ components:
           type: integer
           format: uint16
           example: 1200
-          description: Maximum effective radius of the infrastructure type in meters
+          description: Maximum effective radius of the infra type in meters
 
     InfrastructureTypeResponse:
       type: object
@@ -1223,15 +1223,15 @@ components:
           type: integer
           format: int64
           example: 1
-          description: Internal infrastructure type ID
+          description: Internal infra type ID
         slug:
           type: string
           example: "subway"
-          description: Identifier for the infrastructure type used in code
+          description: Identifier for the infra type used in code
         name:
           type: string
           example: "Метро"
-          description: Russian display name for the infrastructure type
+          description: Russian display name for the infra type
         weight:
           type: number
           format: float
@@ -1241,7 +1241,7 @@ components:
           type: integer
           format: uint16
           example: 1000
-          description: Maximum effective radius of the infrastructure type in meters
+          description: Maximum effective radius of the infra type in meters
 
     ErrorResponse:
       type: object

@@ -1,4 +1,4 @@
-package infrastructure
+package infra
 
 import (
 	"net/http"
@@ -7,7 +7,7 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
 	gendto "github.com/kotafan1rich/geo_logic_api_go/internal/handler/dto"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infrastructure/dto"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infra/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 

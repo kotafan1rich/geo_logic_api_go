@@ -1,4 +1,4 @@
-package infrastructure
+package infra
 
 import (
 	"context"
@@ -7,19 +7,19 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/infrastructure/dbmodel"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/infra/dbmodel"
 	"gorm.io/gorm"
 )
 
-type infrastructureTypeRepository struct {
+type infraTypeRepository struct {
 	db database.DB
 }
 
-func NewInfrastructureTypeRepository(db database.DB) *infrastructureTypeRepository {
-	return &infrastructureTypeRepository{db: db}
+func NewInfrastructureTypeRepository(db database.DB) *infraTypeRepository {
+	return &infraTypeRepository{db: db}
 }
 
-func (t *infrastructureTypeRepository) Create(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error) {
+func (t *infraTypeRepository) Create(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error) {
 	typeModel := dbmodel.ToTypeModel(infraType)
 	err := t.db.GORM().WithContext(ctx).Create(&typeModel).Error
 	if err != nil {
@@ -33,7 +33,7 @@ func (t *infrastructureTypeRepository) Create(ctx context.Context, infraType *mo
 	return infraType, nil
 }
 
-func (t *infrastructureTypeRepository) GetById(ctx context.Context, id uint64) (*model.InfrastructureType, error) {
+func (t *infraTypeRepository) GetById(ctx context.Context, id uint64) (*model.InfrastructureType, error) {
 	var typeModel dbmodel.InfrastructureType
 	err := t.db.GORM().WithContext(ctx).First(&typeModel, id).Error
 	if err != nil {
@@ -46,7 +46,7 @@ func (t *infrastructureTypeRepository) GetById(ctx context.Context, id uint64) (
 	return dbmodel.ToType(&typeModel), nil
 }
 
-func (t *infrastructureTypeRepository) Update(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error) {
+func (t *infraTypeRepository) Update(ctx context.Context, infraType *model.InfrastructureType) (*model.InfrastructureType, error) {
 	typeModel := dbmodel.ToTypeModel(infraType)
 	result := t.db.GORM().WithContext(ctx).Model(&dbmodel.InfrastructureType{}).Where("id = ?", infraType.ID).Updates(map[string]any{
 		"slug":       typeModel.Slug,
@@ -68,7 +68,7 @@ func (t *infrastructureTypeRepository) Update(ctx context.Context, infraType *mo
 	return infraType, nil
 }
 
-func (t *infrastructureTypeRepository) Delete(ctx context.Context, id uint64) error {
+func (t *infraTypeRepository) Delete(ctx context.Context, id uint64) error {
 	result := t.db.GORM().WithContext(ctx).Delete(&dbmodel.InfrastructureType{}, id)
 	if result.Error != nil {
 		return result.Error

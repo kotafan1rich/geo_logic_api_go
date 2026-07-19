@@ -1,4 +1,4 @@
-package infrastructure
+package infra
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	apperrors "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/infrastructure"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/infra"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
@@ -34,7 +34,7 @@ func (t *typeService) Create(ctx context.Context, slug, name string, weight floa
 
 	newType, err = t.repo.Create(ctx, newType)
 	if err != nil {
-		if errors.Is(err, infrastructure.ErrInfrastructureTypeAlreadyExists) {
+		if errors.Is(err, infra.ErrInfrastructureTypeAlreadyExists) {
 			t.log.Warn("type already exists", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrConflict)
 		}
@@ -47,7 +47,7 @@ func (t *typeService) Create(ctx context.Context, slug, name string, weight floa
 func (t *typeService) GetById(ctx context.Context, id uint64) (*model.InfrastructureType, error) {
 	result, err := t.repo.GetById(ctx, id)
 	if err != nil {
-		if errors.Is(err, infrastructure.ErrInfrastructureTypeNotFound) {
+		if errors.Is(err, infra.ErrInfrastructureTypeNotFound) {
 			t.log.Warn("type not found", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
@@ -60,7 +60,7 @@ func (t *typeService) GetById(ctx context.Context, id uint64) (*model.Infrastruc
 func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfrastructureType, error) {
 	oldType, err := t.repo.GetById(ctx, id)
 	if err != nil {
-		if errors.Is(err, infrastructure.ErrInfrastructureTypeNotFound) {
+		if errors.Is(err, infra.ErrInfrastructureTypeNotFound) {
 			t.log.Warn("type not found", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
@@ -110,7 +110,7 @@ func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string,
 
 	updatedType, err := t.repo.Update(ctx, oldType)
 	if err != nil {
-		if errors.Is(err, infrastructure.ErrInfrastructureAlreadyExists) {
+		if errors.Is(err, infra.ErrInfrastructureAlreadyExists) {
 			t.log.Warn("error updating type", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrConflict)
 		}
@@ -123,7 +123,7 @@ func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string,
 func (t *typeService) Delete(ctx context.Context, id uint64) error {
 	err := t.repo.Delete(ctx, id)
 	if err != nil {
-		if errors.Is(err, infrastructure.ErrInfrastructureTypeNotFound) {
+		if errors.Is(err, infra.ErrInfrastructureTypeNotFound) {
 			t.log.Warn("type not found", "error", err)
 			return apperrors.Wrap(err, apperrors.ErrNotFound)
 		}

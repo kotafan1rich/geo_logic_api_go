@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infrastructure/dto"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infra/dto"
 )
 
 func httpAddInfraType(slug, name string, weight float64, maxRadius uint16) (*http.Response, error) {

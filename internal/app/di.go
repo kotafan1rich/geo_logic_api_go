@@ -7,18 +7,18 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/config"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/database"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/event"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infrastructure"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infra"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
 	eventrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/event"
-	infrarepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/infrastructure"
+	infrarepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/infra"
 	rentrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent"
 	userrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 	eventservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/event"
-	infraservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/infrastructure"
+	infraservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/infra"
 	rentservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/rent"
 	userservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/user"
 )
@@ -125,7 +125,7 @@ func (d *diContainer) Handler() api.Handler {
 		userHandler := user.NewHandler(d.UserService())
 		rentHandler := rent.NewHandler(d.RentService())
 		eventHandler := event.NewHandler(d.EventService())
-		infraTypeHandler := infrastructure.NewHandler(d.InfrastructureTypeService())
+		infraTypeHandler := infra.NewHandler(d.InfrastructureTypeService())
 		d.handler = api.NewMainHandler(d.Logger(), userHandler, rentHandler, eventHandler, infraTypeHandler)
 	}
 

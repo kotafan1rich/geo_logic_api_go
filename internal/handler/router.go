@@ -59,9 +59,9 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 		event.GET("/near", eventHandler.Near)
 	}
 
-	infrastructure := router.Group("/infrastructure")
+	infra := router.Group("/infra")
 	{
-		infraType := infrastructure.Group("/types")
+		infraType := infra.Group("/types")
 		{
 			infraType.POST("/", typeHandler.Create)
 			infraType.GET("/:id", typeHandler.GetById)

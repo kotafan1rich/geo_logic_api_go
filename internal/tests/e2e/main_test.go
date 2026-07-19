@@ -108,7 +108,7 @@ func rentsAPI() string { return testServerURL + "/api/rents" }
 
 func eventsAPI() string { return testServerURL + "/api/events" }
 
-func infraTypesAPI() string { return testServerURL + "/api/infrastructure/types" }
+func infraTypesAPI() string { return testServerURL + "/api/infra/types" }
 
 func parseBody(body io.ReadCloser, dest any) error {
 	err := json.NewDecoder(body).Decode(dest)
@@ -119,7 +119,7 @@ func parseBody(body io.ReadCloser, dest any) error {
 }
 
 func clearTables(t *testing.T) {
-	_, err := testDB.Exec("TRUNCATE TABLE users, rents, events, infrastructure_types, infrastructure_objects RESTART IDENTITY CASCADE;")
+	_, err := testDB.Exec("TRUNCATE TABLE users, rents, events, infra_types, infra_objects RESTART IDENTITY CASCADE;")
 	if err != nil {
 		t.Fatalf("Ошибка очистки таблицы перед тестом: %v", err)
 	}
