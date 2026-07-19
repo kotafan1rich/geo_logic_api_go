@@ -75,8 +75,7 @@ func (r *infraRepository) Update(ctx context.Context, infra *model.InfraObject) 
 		"location": gorm.Expr("ST_SetSRID(ST_Point(?, ?), 4326)", infraModel.Location.Long, infraModel.Location.Lat),
 	})
 	if result.Error != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(result.Error, &pgErr) {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](result.Error); ok {
 			switch pgErr.Code {
 			case database.ErrPgUniqueViolation:
 				return nil, ErrInfraAlreadyExists
@@ -105,15 +104,18 @@ func (r *infraRepository) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (r *infraRepository) Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.InfraObject, error) {
+func (r *infraRepository) Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error) {
 	var infras []dbmodel.InfraObject
 
-	err := r.db.GORM().WithContext(ctx).Model(&dbmodel.InfraObject{}).Where(
-		"ST_DWithin(location, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ?)",
-		geopoint.Long,
-		geopoint.Lat,
-		radius,
-	).Find(&infras).Error
+	err := r.db.GORM().WithContext(ctx).
+		Preload("Type").
+		Joins("JOIN infra_types t ON infra_objects.type_id = t.id").
+		Where(`ST_DWithin(
+			ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,
+			infra_objects.location::geography,
+			t.max_radius
+		)`, geopoint.Long, geopoint.Lat).
+		Find(&infras).Error
 	if err != nil {
 		return nil, err
 	}

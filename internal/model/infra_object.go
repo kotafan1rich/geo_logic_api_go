@@ -1,6 +1,8 @@
 package model
 
-import "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
+import (
+	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
+)
 
 type InfraObject struct {
 	ID       uint64
@@ -35,6 +37,6 @@ func (o *InfraObject) UpdateName(name *string) {
 	o.Name = name
 }
 
-func (o *InfraObject) UpdateType(infraType InfraType) {
-	o.Type = infraType
+func (o *InfraObject) UpdateTypeID(typeID uint64) {
+	o.Type.ID = typeID
 }

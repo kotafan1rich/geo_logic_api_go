@@ -34,7 +34,7 @@ type InfraRepository interface {
 	GetByID(ctx context.Context, id uint64) (*model.InfraObject, error)
 	Update(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error)
 	Delete(ctx context.Context, id uint64) error
-	Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.InfraObject, error)
+	Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error)
 }
 
 type InfraTypeRepository interface {

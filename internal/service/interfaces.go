@@ -36,3 +36,11 @@ type InfraTypeService interface {
 	Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfraType, error)
 	Delete(ctx context.Context, id uint64) error
 }
+
+type InfraService interface {
+	Create(ctx context.Context, lat, long float64, address string, name *string, infraID uint64) (*model.InfraObject, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfraObject, error)
+	Update(ctx context.Context, id uint64, lat, long *float64, address, name *string, infraID *uint64) (*model.InfraObject, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error)
+}
