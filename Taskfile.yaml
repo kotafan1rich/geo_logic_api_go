@@ -55,16 +55,17 @@ tasks:
       - test -x {{.GCI}}
 
   format:
-    desc: "Форматирует весь проект gofumpt + gci"
-    deps: [ install-formatters ]
+    desc: "Форматирует весь проект gofumpt + gci автоисправлением"
+    deps: [ install-formatters, install-golangci-lint ]
     cmds:
       - |
         echo "🧼 Форматируем через gofumpt ..."
         find . -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GOFUMPT}} -extra -w {} +
       - |
-        echo "🎯 Сортируем импорты через gci ..."
-        find . -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GCI}} write -s standard -s default -s "prefix(github.com/olezhek28/golang-arch/)" {} +
-
+        echo "🗂️ Автоматически выравниваем импорты (gci) под конфиг линтера ..."
+        # Запуск линтера с флагом --fix применит правила gci из вашего .golangci.yaml ко всем файлам
+        {{.GOLANGCI_LINT}} run ./... --config=.golangci.yaml --fix
+  
   install-golangci-lint:
     desc: "Устанавливает golangci-lint в каталог bin"
     cmds:
@@ -91,4 +92,10 @@ tasks:
   e2e_tests:
     desc: "Запускает E2E тесты API"
     cmds:
-      - go test ./internal/tests/e2e/... -v -run TestAPI
+      - go test ./internal/tests/e2e/... -v -run TestAPI -tags=e2e
+  
+  ci:
+    desc: Run all CI checks (format, lint, tests)
+    deps: [format, lint, e2e_tests]
+    cmds:
+      - echo "🎉 All CI checks passed successfully!"

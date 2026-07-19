@@ -10,9 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/event/dto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/event/dto"
 )
 
 var validDate = time.Date(2026, time.July, 16, 12, 0, 0, 0, time.UTC)

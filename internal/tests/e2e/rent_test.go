@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent/dto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent/dto"
 )
 
 const validAddress = "lol"

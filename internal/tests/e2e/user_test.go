@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user/dto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user/dto"
 )
 
 func httpAddUser(tgId uint64) (*http.Response, error) {
