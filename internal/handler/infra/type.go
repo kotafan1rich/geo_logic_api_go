@@ -15,7 +15,7 @@ type typeHandler struct {
 	service service.InfraTypeService
 }
 
-func NewHandler(service service.InfraTypeService) *typeHandler {
+func NewTypeHandler(service service.InfraTypeService) *typeHandler {
 	return &typeHandler{service: service}
 }
 

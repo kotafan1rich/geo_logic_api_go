@@ -32,7 +32,15 @@ type InfraTypeHandler interface {
 	Delete(c *gin.Context)
 }
 
-func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler, typeHandler InfraTypeHandler) {
+type InfraHandler interface {
+	Create(c *gin.Context)
+	GetByID(c *gin.Context)
+	Update(c *gin.Context)
+	Delete(c *gin.Context)
+	Near(c *gin.Context)
+}
+
+func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler, typeHandler InfraTypeHandler, infraHandler InfraHandler) {
 	user := router.Group("/users")
 	{
 		user.POST("/", userHandler.Create)
@@ -61,6 +69,12 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 
 	infra := router.Group("/infra")
 	{
+		infra.POST("/", infraHandler.Create)
+		infra.GET("/:id", infraHandler.GetByID)
+		infra.PATCH("/:id", infraHandler.Update)
+		infra.DELETE("/:id", infraHandler.Delete)
+		infra.GET("/near", infraHandler.Near)
+
 		infraType := infra.Group("/types")
 		{
 			infraType.POST("/", typeHandler.Create)

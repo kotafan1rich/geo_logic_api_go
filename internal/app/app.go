@@ -44,7 +44,13 @@ func (a *App) initHTTPServer() {
 }
 
 func (a *App) migrateDB() {
-	if err := a.diContainer.DB().GORM().AutoMigrate(&usermodel.User{}, &rentmodel.Rent{}, &eventmodel.Event{}, &inframodel.InfraObject{}, &inframodel.InfraType{}); err != nil {
+	if err := a.diContainer.DB().GORM().AutoMigrate(
+		&usermodel.User{},
+		&rentmodel.Rent{},
+		&eventmodel.Event{},
+		&inframodel.InfraObject{},
+		&inframodel.InfraType{},
+	); err != nil {
 		slog.Error("Failed to run migrations")
 		os.Exit(1)
 	}

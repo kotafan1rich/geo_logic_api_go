@@ -1,4 +1,4 @@
-package event
+package infra
 
 import (
 	"net/http"
@@ -7,36 +7,36 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
 	gendto "github.com/kotafan1rich/geo_logic_api_go/internal/handler/dto"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/event/dto"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infra/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
-type eventHandler struct {
-	service service.EventService
+type infraHandler struct {
+	service service.InfraService
 }
 
-func NewHandler(service service.EventService) *eventHandler {
-	return &eventHandler{service: service}
+func NewInfraHandler(service service.InfraService) *infraHandler {
+	return &infraHandler{service: service}
 }
 
-func (h *eventHandler) Create(c *gin.Context) {
-	var req dto.CreateEventRequest
+func (h *infraHandler) Create(c *gin.Context) {
+	var req dto.CreateInfraRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
 		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
-	event, err := h.service.Create(c.Request.Context(), req.Lat, req.Long, req.Date, req.Info)
+	infra, err := h.service.Create(c.Request.Context(), req.Lat, req.Long, req.Address, req.Name, req.TypeId)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, dto.ToEventResponse(event))
+	c.JSON(http.StatusCreated, dto.ToInfraResponse(infra))
 }
 
-func (h *eventHandler) GetByID(c *gin.Context) {
+func (h *infraHandler) GetByID(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
@@ -44,43 +44,44 @@ func (h *eventHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	event, err := h.service.GetByID(c.Request.Context(), reqUri.ID)
+	infra, err := h.service.GetByID(c.Request.Context(), reqUri.ID)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToEventResponse(event))
+	c.JSON(http.StatusOK, dto.ToInfraResponse(infra))
 }
 
-func (h *eventHandler) Update(c *gin.Context) {
+func (h *infraHandler) Update(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
 		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
-	var reqBody dto.UpdateEventRequest
+	var reqBody dto.UpdateInfraRequest
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		errDetails := handler.ParseValidationError(err)
 		_ = c.Error(errors.ValidationError(errDetails)).SetType(gin.ErrorTypeBind)
 		return
 	}
-	updatedEvent, err := h.service.Update(
+	updatedInfra, err := h.service.Update(
 		c.Request.Context(),
 		reqUri.ID,
 		reqBody.Lat,
 		reqBody.Long,
-		reqBody.Date,
-		reqBody.Info,
+		reqBody.Address,
+		reqBody.Name,
+		reqBody.TypeId,
 	)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToEventResponse(updatedEvent))
+	c.JSON(http.StatusOK, dto.ToInfraResponse(updatedInfra))
 }
 
-func (h *eventHandler) Delete(c *gin.Context) {
+func (h *infraHandler) Delete(c *gin.Context) {
 	var reqUri gendto.IDUriRequest
 	if err := c.ShouldBindUri(&reqUri); err != nil {
 		errDetails := handler.ParseValidationError(err)
@@ -96,7 +97,7 @@ func (h *eventHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *eventHandler) Near(c *gin.Context) {
+func (h *infraHandler) Near(c *gin.Context) {
 	var req dto.NearEventRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		errDetails := handler.ParseValidationError(err)
@@ -109,10 +110,10 @@ func (h *eventHandler) Near(c *gin.Context) {
 		_ = c.Error(errors.ValidationError(err.Error())).SetType(gin.ErrorTypeBind)
 		return
 	}
-	results, err := h.service.Near(c.Request.Context(), geopoint, req.Radius)
+	results, err := h.service.Near(c.Request.Context(), geopoint)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, dto.ToEventResponseSlice(results))
+	c.JSON(http.StatusOK, dto.ToInfraResponseSlice(results))
 }

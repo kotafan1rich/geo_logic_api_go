@@ -16,7 +16,7 @@ type UpdateEventRequest struct {
 	Info *string    `json:"info,omitempty"`
 }
 
-type AvailableEventRequest struct {
+type NearEventRequest struct {
 	Lat    float64 `form:"lat" binding:"required,gte=-90,lte=90"`
 	Long   float64 `form:"long" binding:"required,gte=-180,lte=180"`
 	Radius *uint16 `form:"radius" binding:"omitempty,gt=0,lte=5000"`
