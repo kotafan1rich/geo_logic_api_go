@@ -24,3 +24,29 @@ func (e *Event) UpdateDate(date time.Time) {
 func (e *Event) UpdateInfo(info *string) {
 	e.Info = info
 }
+
+func (e *Event) Update(lat, long *float64, date *time.Time, info *string) error {
+	if lat != nil {
+		err := e.Geopoint.UpdateLat(*lat)
+		if err != nil {
+			return err
+		}
+	}
+
+	if long != nil {
+		err := e.Geopoint.UpdateLong(*long)
+		if err != nil {
+			return err
+		}
+	}
+
+	if date != nil {
+		e.UpdateDate(*date)
+	}
+
+	if info != nil {
+		e.UpdateInfo(info)
+	}
+
+	return nil
+}

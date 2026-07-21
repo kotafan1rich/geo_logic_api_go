@@ -79,35 +79,10 @@ func (s *eventService) Update(ctx context.Context, id uint64, lat, long *float64
 		return nil, err
 	}
 
-	if lat != nil {
-		err = oldEvent.Geopoint.UpdateLat(*lat)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidLat) {
-				s.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			s.log.Error("error updating event", "error", err)
-			return nil, err
-		}
-	}
-	if long != nil {
-		err = oldEvent.Geopoint.UpdateLong(*long)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidLong) {
-				s.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			s.log.Error("error updating event", "error", err)
-			return nil, err
-		}
-	}
-
-	if date != nil {
-		oldEvent.UpdateDate(*date)
-	}
-
-	if info != nil {
-		oldEvent.UpdateInfo(info)
+	err = oldEvent.Update(lat, long, date, info)
+	if err != nil {
+		s.log.Warn("validation error", "error", err)
+		return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 	}
 
 	updatedEvent, err := s.repo.Update(ctx, oldEvent)
