@@ -576,6 +576,7 @@ func TestE2E_InfraDelete_Validation(t *testing.T) {
 		})
 	}
 }
+
 func httpGetInfraNear(queryParams string) (*http.Response, error) {
 	url := fmt.Sprintf("%s/near?%s", infrasAPI(), queryParams)
 	return httpClient.Get(url)
@@ -674,4 +675,3 @@ func TestE2E_InfraNear_Validation(t *testing.T) {
 		})
 	}
 }
-
