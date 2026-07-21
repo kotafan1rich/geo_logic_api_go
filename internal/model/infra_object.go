@@ -40,3 +40,34 @@ func (o *InfraObject) UpdateName(name *string) {
 func (o *InfraObject) UpdateTypeID(typeID uint64) {
 	o.Type.ID = typeID
 }
+
+func (o *InfraObject) Update(lat, long *float64, address, name *string, typeID *uint64) error {
+	if lat != nil {
+		err := o.GeoPoint.UpdateLat(*lat)
+		if err != nil {
+			return err
+		}
+	}
+	if long != nil {
+		err := o.GeoPoint.UpdateLong(*long)
+		if err != nil {
+			return err
+		}
+	}
+
+	if address != nil {
+		err := o.UpdateAddress(*address)
+		if err != nil {
+			return err
+		}
+	}
+
+	if name != nil {
+		o.UpdateName(name)
+	}
+
+	if typeID != nil {
+		o.UpdateTypeID(*typeID)
+	}
+	return nil
+}

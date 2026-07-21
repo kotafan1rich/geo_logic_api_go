@@ -74,47 +74,10 @@ func (i *infraService) Update(ctx context.Context, id uint64, lat, long *float64
 		return nil, err
 	}
 
-	if lat != nil {
-		err = oldInfra.GeoPoint.UpdateLat(*lat)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidLat) {
-				i.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			i.log.Error("error updating rent", "error", err)
-			return nil, err
-		}
-	}
-	if long != nil {
-		err = oldInfra.GeoPoint.UpdateLong(*long)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidLong) {
-				i.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			i.log.Error("error updating infra", "error", err)
-			return nil, err
-		}
-	}
-
-	if address != nil {
-		err := oldInfra.UpdateAddress(*address)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidLong) {
-				i.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			i.log.Error("error updating infra", "error", err)
-			return nil, err
-		}
-	}
-
-	if name != nil {
-		oldInfra.UpdateName(name)
-	}
-
-	if infraID != nil {
-		oldInfra.UpdateTypeID(*infraID)
+	err = oldInfra.Update(lat, long, address, name, infraID)
+	if err != nil {
+		i.log.Warn("validation error", "error", err)
+		return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 	}
 
 	updatedInfra, err := i.repo.Update(ctx, oldInfra)
