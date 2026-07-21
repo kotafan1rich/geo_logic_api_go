@@ -20,19 +20,8 @@ func NewRepository(db database.DB) *rentRepository {
 }
 
 func (r *rentRepository) Create(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
-	point := database.DBGeoPoint(*rent.Geopoint)
-	wktPoint, err := point.Value()
-	if err != nil {
-		return nil, err
-	}
-
-	var id uint64
-	err = r.db.GORM().WithContext(ctx).Raw(
-		`INSERT INTO "rents" ("location", "address", "info") 
-		 VALUES (ST_GeomFromText(?, 4326), ?, ?)
-		 RETURNING id`,
-		wktPoint, rent.Address, rent.Info,
-	).Scan(&id).Error
+	rentModel := dbmodel.ToRentModel(rent)
+	err := r.db.GORM().WithContext(ctx).Create(rentModel).Error
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {
@@ -40,8 +29,7 @@ func (r *rentRepository) Create(ctx context.Context, rent *model.Rent) (*model.R
 		}
 		return nil, err
 	}
-	rent.ID = id
-	return rent, nil
+	return dbmodel.ToRent(rentModel), nil
 }
 
 func (r *rentRepository) GetByID(ctx context.Context, id uint64) (*model.Rent, error) {
