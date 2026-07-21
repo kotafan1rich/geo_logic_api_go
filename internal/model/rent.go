@@ -35,3 +35,31 @@ func (r *Rent) UpdateAddress(address string) error {
 func (r *Rent) UpdateInfo(info string) {
 	r.Info = &info
 }
+
+func (r *Rent) Update(lat, long *float64, address *string, info *string) error {
+	if lat != nil {
+		err := r.Geopoint.UpdateLat(*lat)
+		if err != nil {
+			return err
+		}
+	}
+
+	if long != nil {
+		err := r.Geopoint.UpdateLong(*long)
+		if err != nil {
+			return err
+		}
+	}
+
+	if address != nil {
+		err := r.UpdateAddress(*address)
+		if err != nil {
+			return err
+		}
+	}
+
+	if info != nil {
+		r.UpdateInfo(*info)
+	}
+	return nil
+}

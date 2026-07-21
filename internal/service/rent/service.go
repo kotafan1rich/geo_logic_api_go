@@ -77,40 +77,11 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 		s.log.Error("error getting rent", "error", err)
 		return nil, err
 	}
-
-	if lat != nil {
-		err = oldRent.Geopoint.UpdateLat(*lat)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidLat) {
-				s.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			s.log.Error("error updating rent", "error", err)
-			return nil, err
-		}
-	}
-	if long != nil {
-		err = oldRent.Geopoint.UpdateLong(*long)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidLong) {
-				s.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			s.log.Error("error updating rent", "error", err)
-			return nil, err
-		}
-	}
-
-	if address != nil {
-		err = oldRent.UpdateAddress(*address)
-		if err != nil {
-			s.log.Warn("validation error", "error", err)
-			return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-		}
-	}
-
-	if info != nil {
-		oldRent.UpdateInfo(*info)
+	
+	err = oldRent.Update(lat, long, address, info)
+	if err != nil {
+		s.log.Warn("validation error", "error", err)
+		return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 	}
 
 	updatedRent, err := s.repo.Update(ctx, oldRent)
