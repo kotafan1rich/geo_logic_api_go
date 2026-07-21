@@ -77,7 +77,7 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 		s.log.Error("error getting rent", "error", err)
 		return nil, err
 	}
-	
+
 	err = oldRent.Update(lat, long, address, info)
 	if err != nil {
 		s.log.Warn("validation error", "error", err)
