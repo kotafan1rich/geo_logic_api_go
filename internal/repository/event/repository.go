@@ -20,19 +20,8 @@ func NewRepository(db database.DB) *eventRepository {
 }
 
 func (r *eventRepository) Create(ctx context.Context, event *model.Event) (*model.Event, error) {
-	point := database.DBGeoPoint(event.Geopoint)
-	wktPoint, err := point.Value()
-	if err != nil {
-		return nil, err
-	}
-
-	var id uint64
-	err = r.db.GORM().WithContext(ctx).Raw(
-		`INSERT INTO "events" ("location", "date", "info") 
-		 VALUES (ST_GeomFromText(?, 4326), ?, ?)
-		 RETURNING id`,
-		wktPoint, event.Date, event.Info,
-	).Scan(&id).Error
+	eventModel := dbmodel.ToEventModel(event)
+	err := r.db.GORM().WithContext(ctx).Create(eventModel).Error
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == database.ErrPgUniqueViolation {
@@ -40,8 +29,7 @@ func (r *eventRepository) Create(ctx context.Context, event *model.Event) (*mode
 		}
 		return nil, err
 	}
-	event.ID = id
-	return event, nil
+	return dbmodel.ToEvent(eventModel), nil
 }
 
 func (r *eventRepository) GetByID(ctx context.Context, id uint64) (*model.Event, error) {
