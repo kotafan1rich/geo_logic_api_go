@@ -64,7 +64,6 @@ func (s *userService) Update(ctx context.Context, id, newTgID uint64) (*model.Us
 		s.log.Error("error updating user", "error", err)
 		return nil, err
 	}
-	s.log.Info("user found", "user", oldUser)
 	if oldUser.TgID != newTgID {
 		oldUser.TgID = newTgID
 		oldUser, err = s.repo.Update(ctx, oldUser)

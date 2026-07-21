@@ -47,7 +47,6 @@ func (i *infraService) Create(ctx context.Context, lat, long float64, address st
 		i.log.Error("error creating infra", "error", err)
 		return nil, err
 	}
-	i.log.Info("infra created", "infra", newInfra)
 	return newInfra, nil
 }
 
@@ -117,7 +116,6 @@ func (i *infraService) Update(ctx context.Context, id uint64, lat, long *float64
 	if infraID != nil {
 		oldInfra.UpdateTypeID(*infraID)
 	}
-	i.log.Info("Infra for update", "Infra", oldInfra)
 
 	updatedInfra, err := i.repo.Update(ctx, oldInfra)
 	if err != nil {
