@@ -13,7 +13,7 @@ type DBGeoPoint struct {
 	Long float64
 }
 
-func (p *DBGeoPoint) Value() (driver.Value, error) {
+func (p DBGeoPoint) Value() (driver.Value, error) {
 	return fmt.Sprintf("SRID=4326;POINT(%f %f)", p.Long, p.Lat), nil
 }
 

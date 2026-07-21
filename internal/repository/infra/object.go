@@ -20,27 +20,10 @@ func NewInfraRepository(db database.DB) *infraRepository {
 }
 
 func (r *infraRepository) Create(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error) {
-	point := database.DBGeoPoint(infra.GeoPoint)
-	wktPoint, err := point.Value()
+	dbInfra := dbmodel.ToObjectModel(infra)
+	err := r.db.GORM().WithContext(ctx).Create(&dbInfra).Error
 	if err != nil {
-		return nil, err
-	}
-
-	var id uint64
-	err = r.db.GORM().WithContext(ctx).Raw(
-		`INSERT INTO "structure_objects" (
-			"location",
-			"address",
-			"name",
-			"type_id"
-		)
-		 VALUES (ST_GeomFromText(?, 4326), ?, ?, ?)
-		 RETURNING id`,
-		wktPoint, infra.Address, infra.Name, infra.Type.ID,
-	).Scan(&id).Error
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
 			switch pgErr.Code {
 			case database.ErrPgUniqueViolation:
 				return nil, ErrInfraAlreadyExists
@@ -50,13 +33,17 @@ func (r *infraRepository) Create(ctx context.Context, infra *model.InfraObject) 
 		}
 		return nil, err
 	}
-	infra.ID = id
-	return infra, nil
+
+	err = r.db.GORM().WithContext(ctx).Preload("Type").First(&dbInfra, dbInfra.ID).Error
+	if err != nil {
+		return nil, err
+	}
+	return dbmodel.ToObject(dbInfra), nil
 }
 
 func (r *infraRepository) GetByID(ctx context.Context, id uint64) (*model.InfraObject, error) {
 	var infra dbmodel.InfraObject
-	err := r.db.GORM().WithContext(ctx).First(&infra, id).Error
+	err := r.db.GORM().WithContext(ctx).Preload("Type").First(&infra, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrInfraNotFound

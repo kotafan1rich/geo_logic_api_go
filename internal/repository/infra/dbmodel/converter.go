@@ -16,12 +16,14 @@ func ToType(infraType *InfraType) *model.InfraType {
 }
 
 func ToTypeModel(infraType *model.InfraType) InfraType {
-	return InfraType{
+	result := InfraType{
 		Slug:      infraType.Slug,
 		Name:      infraType.Name,
 		Weight:    infraType.Weight,
 		MaxRadius: infraType.MaxRadius,
 	}
+	result.ID = infraType.ID
+	return result
 }
 
 func ToObject(infraObj *InfraObject) *model.InfraObject {
@@ -35,13 +37,15 @@ func ToObject(infraObj *InfraObject) *model.InfraObject {
 }
 
 func ToObjectModel(infraObj *model.InfraObject) *InfraObject {
-	return &InfraObject{
+	result := &InfraObject{
 		Location: database.DBGeoPoint(infraObj.GeoPoint),
 		Address:  infraObj.Address,
 		Name:     infraObj.Name,
 		TypeID:   infraObj.Type.ID,
 		Type:     ToTypeModel(&infraObj.Type),
 	}
+	result.ID = infraObj.ID
+	return result
 }
 
 func ToObjectSlice(objs []InfraObject) []model.InfraObject {

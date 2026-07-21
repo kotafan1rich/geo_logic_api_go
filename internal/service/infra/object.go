@@ -47,6 +47,7 @@ func (i *infraService) Create(ctx context.Context, lat, long float64, address st
 		i.log.Error("error creating infra", "error", err)
 		return nil, err
 	}
+	i.log.Info("infra created", "infra", newInfra)
 	return newInfra, nil
 }
 
@@ -66,7 +67,7 @@ func (i *infraService) GetByID(ctx context.Context, id uint64) (*model.InfraObje
 func (i *infraService) Update(ctx context.Context, id uint64, lat, long *float64, address, name *string, infraID *uint64) (*model.InfraObject, error) {
 	oldInfra, err := i.repo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, infra.ErrInfraTypeNotFound) {
+		if errors.Is(err, infra.ErrInfraNotFound) {
 			i.log.Warn("infra not found", "error", err)
 			return nil, apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
@@ -116,6 +117,7 @@ func (i *infraService) Update(ctx context.Context, id uint64, lat, long *float64
 	if infraID != nil {
 		oldInfra.UpdateTypeID(*infraID)
 	}
+	i.log.Info("Infra for update", "Infra", oldInfra)
 
 	updatedInfra, err := i.repo.Update(ctx, oldInfra)
 	if err != nil {

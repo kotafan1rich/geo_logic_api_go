@@ -88,7 +88,7 @@ func httpDeleteInfraType(id uint64) (*http.Response, error) {
 func TestE2E_InfraTypeAdd(t *testing.T) {
 	clearTables(t)
 
-	resp, err := httpAddInfraType("subway", "Метро", 1.5, 500)
+	resp, err := httpAddInfraType(validSlug, validName, validWeight, validMaxRadius)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -99,10 +99,10 @@ func TestE2E_InfraTypeAdd(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.NotZero(t, createdType.ID)
-	assert.Equal(t, "subway", createdType.Slug)
-	assert.Equal(t, "Метро", createdType.Name)
-	assert.Equal(t, 1.5, createdType.Weight)
-	assert.Equal(t, uint16(500), createdType.MaxRadius)
+	assert.Equal(t, validSlug, createdType.Slug)
+	assert.Equal(t, validName, createdType.Name)
+	assert.Equal(t, validWeight, createdType.Weight)
+	assert.Equal(t, uint16(validMaxRadius), createdType.MaxRadius)
 }
 
 // 2. Тест валидации входящего JSON при создании

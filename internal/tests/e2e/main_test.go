@@ -40,9 +40,14 @@ var httpClient = &http.Client{
 }
 
 const (
-	validLat  = 67.6767
-	validLong = 67.6767
-	validInfo = "lool"
+	validLat       = 67.6767
+	validLong      = 67.6767
+	validInfo      = "lool"
+	validAddress   = "lol"
+	validSlug      = "subway"
+	validName      = "Метро"
+	validWeight    = 1.5
+	validMaxRadius = 500
 )
 
 func TestMain(m *testing.M) {
@@ -110,10 +115,12 @@ func eventsAPI() string { return testServerURL + "/api/events" }
 
 func infraTypesAPI() string { return testServerURL + "/api/infra/types" }
 
+func infrasAPI() string { return testServerURL + "/api/infra" }
+
 func parseBody(body io.ReadCloser, dest any) error {
 	err := json.NewDecoder(body).Decode(dest)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse response body: %w", err)
 	}
 	return nil
 }

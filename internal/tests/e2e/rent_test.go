@@ -15,8 +15,6 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent/dto"
 )
 
-const validAddress = "lol"
-
 func httpAddRent(lat, long float64, address string, info *string) (*http.Response, error) {
 	payload := dto.CreateRentRequest{
 		Lat:     lat,
