@@ -55,3 +55,31 @@ func (t *InfraType) UpdateWeight(weight float64) error {
 func (t *InfraType) UpdateMaxRadius(maxRadius uint16) {
 	t.MaxRadius = maxRadius
 }
+
+func (t *InfraType) Update(slug, name *string, weight *float64, maxRadius *uint16) error {
+	if slug != nil {
+		err := t.UpdateSlug(*slug)
+		if err != nil {
+			return err
+		}
+	}
+
+	if name != nil {
+		err := t.UpdateName(*name)
+		if err != nil {
+			return err
+		}
+	}
+
+	if weight != nil {
+		err := t.UpdateWeight(*weight)
+		if err != nil {
+			return err
+		}
+	}
+
+	if maxRadius != nil {
+		t.UpdateMaxRadius(*maxRadius)
+	}
+	return nil
+}

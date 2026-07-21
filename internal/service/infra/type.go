@@ -68,44 +68,10 @@ func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string,
 		return nil, err
 	}
 
-	if slug != nil {
-		err = oldType.UpdateSlug(*slug)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidSlug) {
-				t.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			t.log.Error("error updating type", "error", err)
-			return nil, err
-		}
-	}
-
-	if name != nil {
-		err = oldType.UpdateName(*name)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidName) {
-				t.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			t.log.Error("error updating type", "error", err)
-			return nil, err
-		}
-	}
-
-	if weight != nil {
-		err = oldType.UpdateWeight(*weight)
-		if err != nil {
-			if errors.Is(err, apperrors.ErrInvalidWeight) {
-				t.log.Warn("validation error", "error", err)
-				return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
-			}
-			t.log.Error("error updating type", "error", err)
-			return nil, err
-		}
-	}
-
-	if maxRadius != nil {
-		oldType.UpdateMaxRadius(*maxRadius)
+	err = oldType.Update(slug, name, weight, maxRadius)
+	if err != nil {
+		t.log.Warn("validation error", "error", err)
+		return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 	}
 
 	updatedType, err := t.repo.Update(ctx, oldType)
