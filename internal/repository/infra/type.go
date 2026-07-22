@@ -11,7 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type InfraTypeRepository interface {
 	Create(ctx context.Context, infraType *model.InfraType) (*model.InfraType, error)
 	GetByID(ctx context.Context, id uint64) (*model.InfraType, error)
