@@ -1,4 +1,16 @@
 services:
+  api:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - 8080:${SERVER_PORT}
+    networks:
+      - geo_logic_net
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgis/postgis:18-3.6
     env_file:
@@ -13,7 +25,7 @@ services:
       - db_data:/var/lib/postgresql
     networks:
       - geo_logic_net
-    
+
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
       interval: 5s

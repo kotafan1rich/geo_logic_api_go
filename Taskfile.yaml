@@ -14,27 +14,32 @@ vars:
 
 tasks:
   db:up:
-    desc: "Start PostGIS container"
+    desc: "Запустить PostGIS через Docker Compose"
     cmds:
-      - docker compose up -d
+      - docker compose up -d db
 
   db:down:
-    desc: "Stop PostGIS container"
+    desc: "Остановить PostGIS и очистить volumes"
     cmds:
-      - docker compose down
+      - docker compose down -v
+
+  app:up:
+    desc: "Запустить всё окружение (API + DB) в контейнерах"
+    cmds:
+      - docker compose up -d --build
 
   logs:
-    desc: "View containers logs"
+    desc: "Просмотр логов всех контейнеров"
     cmds:
       - docker compose logs -f
 
   run:
-    desc: "Run the Go application"
+    desc: "Локальный запуск Go-приложения"
     cmds:
       - go run cmd/server/main.go
 
   build:
-    desc: "Build the Go binary"
+    desc: "Сборка бинарника Go"
     cmds:
       - go build -o bin/{{.APP_NAME}} cmd/server/main.go
 
@@ -63,7 +68,6 @@ tasks:
         find . -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GOFUMPT}} -extra -w {} +
       - |
         echo "🗂️ Автоматически выравниваем импорты (gci) под конфиг линтера ..."
-        # Запуск линтера с флагом --fix применит правила gci из вашего .golangci.yaml ко всем файлам
         {{.GOLANGCI_LINT}} run ./... --config=.golangci.yaml --fix
   
   install-golangci-lint:
@@ -90,12 +94,12 @@ tasks:
       - go test ./internal/... -v
 
   e2e_tests:
-    desc: "Запускает E2E тесты API"
+    desc: "Запускает E2E тесты API с автоматическим контролем контейнера базы"
     cmds:
       - go test ./internal/tests/e2e/... -v -run TestAPI -tags=e2e
   
   ci:
-    desc: Run all CI checks (format, lint, tests)
+    desc: "Запуск всех проверок CI (форматирование, линтер, тесты)"
     deps: [format, lint, e2e_tests]
     cmds:
       - echo "🎉 All CI checks passed successfully!"
