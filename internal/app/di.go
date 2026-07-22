@@ -11,12 +11,10 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
 	eventrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/event"
 	infrarepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/infra"
 	rentrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent"
 	userrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 	eventservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/event"
 	infraservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/infra"
 	rentservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/rent"
@@ -26,21 +24,21 @@ import (
 type diContainer struct {
 	db database.DB
 
-	userRepo      repository.UserRepository
-	rentRepo      repository.RentRepository
-	eventRepo     repository.EventRepository
-	infraTypeRepo repository.InfraTypeRepository
-	infraRepo     repository.InfraRepository
+	userRepo      *userrepo.UserRepository
+	rentRepo      *rentrepo.RentRepository
+	eventRepo     *eventrepo.EventRepository
+	infraTypeRepo *infrarepo.InfraTypeRepository
+	infraRepo     *infrarepo.InfraRepository
 
-	userService      service.UserService
-	rentService      service.RentService
-	eventService     service.EventService
-	infraTypeService service.InfraTypeService
-	infraService     service.InfraService
+	userService      *userservice.UserService
+	rentService      *rentservice.RentService
+	eventService     *eventservice.EventService
+	infraTypeService *infraservice.TypeService
+	infraService     *infraservice.InfraService
 
-	handler api.Handler
+	handler *api.HttpHandler
 
-	log logger.Logger
+	log *logger.Logger
 }
 
 func newDIContainer() *diContainer {
@@ -61,7 +59,7 @@ func (d *diContainer) DB() database.DB {
 	return d.db
 }
 
-func (d *diContainer) UserRepo() repository.UserRepository {
+func (d *diContainer) UserRepo() *userrepo.UserRepository {
 	if d.userRepo == nil {
 		d.userRepo = userrepo.NewRepository(d.DB())
 	}
@@ -69,7 +67,7 @@ func (d *diContainer) UserRepo() repository.UserRepository {
 	return d.userRepo
 }
 
-func (d *diContainer) RentRepo() repository.RentRepository {
+func (d *diContainer) RentRepo() *rentrepo.RentRepository {
 	if d.rentRepo == nil {
 		d.rentRepo = rentrepo.NewRepository(d.DB())
 	}
@@ -77,7 +75,7 @@ func (d *diContainer) RentRepo() repository.RentRepository {
 	return d.rentRepo
 }
 
-func (d *diContainer) EventRepo() repository.EventRepository {
+func (d *diContainer) EventRepo() *eventrepo.EventRepository {
 	if d.eventRepo == nil {
 		d.eventRepo = eventrepo.NewRepository(d.DB())
 	}
@@ -85,7 +83,7 @@ func (d *diContainer) EventRepo() repository.EventRepository {
 	return d.eventRepo
 }
 
-func (d *diContainer) InfraTypeRepo() repository.InfraTypeRepository {
+func (d *diContainer) InfraTypeRepo() *infrarepo.InfraTypeRepository {
 	if d.infraTypeRepo == nil {
 		d.infraTypeRepo = infrarepo.NewInfraTypeRepository(d.DB())
 	}
@@ -93,7 +91,7 @@ func (d *diContainer) InfraTypeRepo() repository.InfraTypeRepository {
 	return d.infraTypeRepo
 }
 
-func (d *diContainer) InfraRepo() repository.InfraRepository {
+func (d *diContainer) InfraRepo() *infrarepo.InfraRepository {
 	if d.infraRepo == nil {
 		d.infraRepo = infrarepo.NewInfraRepository(d.DB())
 	}
@@ -101,56 +99,56 @@ func (d *diContainer) InfraRepo() repository.InfraRepository {
 	return d.infraRepo
 }
 
-func (d *diContainer) UserService() service.UserService {
+func (d *diContainer) UserService() *userservice.UserService {
 	if d.userService == nil {
-		d.userService = userservice.NewUserService(d.Logger(), d.UserRepo())
+		d.userService = userservice.NewUserService(*d.Logger(), d.UserRepo())
 	}
 
 	return d.userService
 }
 
-func (d *diContainer) RentService() service.RentService {
+func (d *diContainer) RentService() *rentservice.RentService {
 	if d.rentService == nil {
-		d.rentService = rentservice.NewRentService(d.Logger(), d.RentRepo())
+		d.rentService = rentservice.NewRentService(*d.Logger(), d.RentRepo())
 	}
 	return d.rentService
 }
 
-func (d *diContainer) EventService() service.EventService {
+func (d *diContainer) EventService() *eventservice.EventService {
 	if d.eventService == nil {
-		d.eventService = eventservice.NewEventService(d.Logger(), d.EventRepo())
+		d.eventService = eventservice.NewEventService(*d.Logger(), d.EventRepo())
 	}
 	return d.eventService
 }
 
-func (d *diContainer) InfraTypeService() service.InfraTypeService {
+func (d *diContainer) InfraTypeService() *infraservice.TypeService {
 	if d.infraTypeService == nil {
-		d.infraTypeService = infraservice.NewTypeService(d.Logger(), d.InfraTypeRepo())
+		d.infraTypeService = infraservice.NewTypeService(*d.Logger(), d.InfraTypeRepo())
 	}
 	return d.infraTypeService
 }
 
-func (d *diContainer) InfraService() service.InfraService {
+func (d *diContainer) InfraService() *infraservice.InfraService {
 	if d.infraService == nil {
-		d.infraService = infraservice.NewInfraService(d.Logger(), d.InfraRepo())
+		d.infraService = infraservice.NewInfraService(*d.Logger(), d.InfraRepo())
 	}
 	return d.infraService
 }
 
-func (d *diContainer) Handler() api.Handler {
+func (d *diContainer) Handler() *api.HttpHandler {
 	if d.handler == nil {
 		userHandler := user.NewHandler(d.UserService())
 		rentHandler := rent.NewHandler(d.RentService())
 		eventHandler := event.NewHandler(d.EventService())
 		infraTypeHandler := infra.NewTypeHandler(d.InfraTypeService())
 		infraHandler := infra.NewInfraHandler(d.InfraService())
-		d.handler = api.NewMainHandler(d.Logger(), userHandler, rentHandler, eventHandler, infraTypeHandler, infraHandler)
+		d.handler = api.NewHttpHandler(*d.Logger(), userHandler, rentHandler, eventHandler, infraTypeHandler, infraHandler)
 	}
 
 	return d.handler
 }
 
-func (d *diContainer) Logger() logger.Logger {
+func (d *diContainer) Logger() *logger.Logger {
 	if d.log == nil {
 		cfg := config.Get()
 		d.log = logger.New(cfg.Logging.LogLevel,

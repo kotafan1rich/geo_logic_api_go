@@ -1,6 +1,7 @@
 package rent
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,14 +10,21 @@ import (
 	gendto "github.com/kotafan1rich/geo_logic_api_go/internal/handler/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
-type rentHandler struct {
-	service service.RentService
+type RentService interface {
+	Create(ctx context.Context, lat, long float64, address string, info *string) (*model.Rent, error)
+	GetByID(ctx context.Context, id uint64) (*model.Rent, error)
+	Update(ctx context.Context, id uint64, lat, long *float64, address, info *string) (*model.Rent, error)
+	Delete(ctx context.Context, id uint64) error
+	Available(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Rent, error)
 }
 
-func NewHandler(service service.RentService) *rentHandler {
+type rentHandler struct {
+	service RentService
+}
+
+func NewHandler(service RentService) *rentHandler {
 	return &rentHandler{service: service}
 }
 

@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	apperrors "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent"
 )
 
@@ -15,22 +15,24 @@ const (
 	maxRadius     = 5000
 )
 
-type Logger interface {
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-	Error(msg string, args ...any)
+type RentRepository interface {
+	Create(ctx context.Context, rent *model.Rent) (*model.Rent, error)
+	GetByID(ctx context.Context, id uint64) (*model.Rent, error)
+	Update(ctx context.Context, rent *model.Rent) (*model.Rent, error)
+	Delete(ctx context.Context, id uint64) error
+	Available(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Rent, error)
 }
 
-type rentService struct {
-	repo repository.RentRepository
-	log  Logger
+type RentService struct {
+	repo RentRepository
+	log  logger.Logger
 }
 
-func NewRentService(log Logger, repo repository.RentRepository) *rentService {
-	return &rentService{repo: repo, log: log}
+func NewRentService(log logger.Logger, repo RentRepository) *RentService {
+	return &RentService{repo: repo, log: log}
 }
 
-func (s *rentService) Create(ctx context.Context, lat, long float64, address string, info *string) (*model.Rent, error) {
+func (s *RentService) Create(ctx context.Context, lat, long float64, address string, info *string) (*model.Rent, error) {
 	geopoint, err := model.NewGeoPoint(lat, long)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidLat) || errors.Is(err, apperrors.ErrInvalidLong) {
@@ -54,7 +56,7 @@ func (s *rentService) Create(ctx context.Context, lat, long float64, address str
 	return createdRent, nil
 }
 
-func (s *rentService) GetByID(ctx context.Context, id uint64) (*model.Rent, error) {
+func (s *RentService) GetByID(ctx context.Context, id uint64) (*model.Rent, error) {
 	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentNotFound) {
@@ -67,7 +69,7 @@ func (s *rentService) GetByID(ctx context.Context, id uint64) (*model.Rent, erro
 	return result, nil
 }
 
-func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64, address, info *string) (*model.Rent, error) {
+func (s *RentService) Update(ctx context.Context, id uint64, lat, long *float64, address, info *string) (*model.Rent, error) {
 	oldRent, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentNotFound) {
@@ -96,7 +98,7 @@ func (s *rentService) Update(ctx context.Context, id uint64, lat, long *float64,
 	return updatedRent, nil
 }
 
-func (s *rentService) Delete(ctx context.Context, id uint64) error {
+func (s *RentService) Delete(ctx context.Context, id uint64) error {
 	err := s.repo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, rent.ErrRentNotFound) {
@@ -109,7 +111,7 @@ func (s *rentService) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (s *rentService) Available(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Rent, error) {
+func (s *RentService) Available(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Rent, error) {
 	var finalRadius uint16
 	if radius == nil {
 		finalRadius = defaultRadius

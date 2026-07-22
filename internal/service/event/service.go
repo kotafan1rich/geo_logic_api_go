@@ -6,8 +6,8 @@ import (
 	"time"
 
 	apperrors "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/event"
 )
 
@@ -16,22 +16,24 @@ const (
 	maxRadius     = 5000
 )
 
-type Logger interface {
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-	Error(msg string, args ...any)
+type EventRepository interface {
+	Create(ctx context.Context, event *model.Event) (*model.Event, error)
+	GetByID(ctx context.Context, id uint64) (*model.Event, error)
+	Update(ctx context.Context, event *model.Event) (*model.Event, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Event, error)
 }
 
-type eventService struct {
-	repo repository.EventRepository
-	log  Logger
+type EventService struct {
+	repo EventRepository
+	log  logger.Logger
 }
 
-func NewEventService(log Logger, repo repository.EventRepository) *eventService {
-	return &eventService{repo: repo, log: log}
+func NewEventService(log logger.Logger, repo EventRepository) *EventService {
+	return &EventService{repo: repo, log: log}
 }
 
-func (s *eventService) Create(ctx context.Context, lat, long float64, date time.Time, info *string) (*model.Event, error) {
+func (s *EventService) Create(ctx context.Context, lat, long float64, date time.Time, info *string) (*model.Event, error) {
 	geopoint, err := model.NewGeoPoint(lat, long)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidLat) || errors.Is(err, apperrors.ErrInvalidLong) {
@@ -55,7 +57,7 @@ func (s *eventService) Create(ctx context.Context, lat, long float64, date time.
 	return createdEvent, nil
 }
 
-func (s *eventService) GetByID(ctx context.Context, id uint64) (*model.Event, error) {
+func (s *EventService) GetByID(ctx context.Context, id uint64) (*model.Event, error) {
 	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, event.ErrEventNotFound) {
@@ -68,7 +70,7 @@ func (s *eventService) GetByID(ctx context.Context, id uint64) (*model.Event, er
 	return result, nil
 }
 
-func (s *eventService) Update(ctx context.Context, id uint64, lat, long *float64, date *time.Time, info *string) (*model.Event, error) {
+func (s *EventService) Update(ctx context.Context, id uint64, lat, long *float64, date *time.Time, info *string) (*model.Event, error) {
 	oldEvent, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, event.ErrEventNotFound) {
@@ -97,7 +99,7 @@ func (s *eventService) Update(ctx context.Context, id uint64, lat, long *float64
 	return updatedEvent, nil
 }
 
-func (s *eventService) Delete(ctx context.Context, id uint64) error {
+func (s *EventService) Delete(ctx context.Context, id uint64) error {
 	err := s.repo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, event.ErrEventNotFound) {
@@ -110,7 +112,7 @@ func (s *eventService) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (s *eventService) Near(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Event, error) {
+func (s *EventService) Near(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Event, error) {
 	var finalRadius uint16
 	if radius == nil {
 		finalRadius = defaultRadius

@@ -9,18 +9,7 @@ import (
 	"time"
 )
 
-type Logger interface {
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-	Error(msg string, args ...any)
-
-	With(attrs ...any) Logger
-	WithLatency(latency time.Duration) Logger
-	WithRequest(status int, method, path, query, ip, userAgent string, latency time.Duration) Logger
-	LogError(ctx context.Context, err error, message string)
-}
-
-type logger struct {
+type Logger struct {
 	*slog.Logger
 }
 
@@ -40,7 +29,7 @@ const (
 	FormatText LogFormat = "text"
 )
 
-func New(level LogLevel, format LogFormat, addSource bool, output io.Writer) Logger {
+func New(level LogLevel, format LogFormat, addSource bool, output io.Writer) *Logger {
 	var slogLevel slog.Level
 	switch level {
 	case LevelDebug:
@@ -82,40 +71,33 @@ func New(level LogLevel, format LogFormat, addSource bool, output io.Writer) Log
 		panic("bad log format")
 	}
 
-	return &logger{
-		Logger: slog.New(handler),
+	logger := slog.New(handler)
+
+	logger.Info(
+		"Created logger",
+		slog.String("level", string(level)),
+		slog.String("format", string(format)),
+		slog.Bool("addSource", addSource),
+		slog.Any("output", output),
+	)
+	return &Logger{
+		Logger: logger,
 	}
 }
 
-func Default() Logger {
+func Default() *Logger {
 	return New(LevelInfo, FormatText, false, os.Stdout)
 }
 
-func (l *logger) Info(msg string, args ...any) {
-	l.Logger.Info(msg, args...)
-}
-
-func (l *logger) Warn(msg string, args ...any) {
-	l.Logger.Warn(msg, args...)
-}
-
-func (l *logger) Error(msg string, args ...any) {
-	l.Logger.Error(msg, args...)
-}
-
-func (l *logger) With(attrs ...any) Logger {
-	return &logger{Logger: l.Logger.With(attrs...)}
-}
-
-func (l *logger) WithLatency(latency time.Duration) Logger {
-	return &logger{
-		Logger: l.Logger.With(slog.Duration("latency", latency)),
+func (l *Logger) WithLatency(latency time.Duration) *Logger {
+	return &Logger{
+		Logger: l.With(slog.Duration("latency", latency)),
 	}
 }
 
-func (l *logger) WithRequest(status int, method, path, query, ip, userAgent string, latency time.Duration) Logger {
-	return &logger{
-		Logger: l.Logger.With(
+func (l *Logger) WithRequest(status int, method, path, query, ip, userAgent string, latency time.Duration) *Logger {
+	return &Logger{
+		Logger: l.With(
 			slog.Int("status", status),
 			slog.String("method", method),
 			slog.String("path", path),
@@ -127,7 +109,7 @@ func (l *logger) WithRequest(status int, method, path, query, ip, userAgent stri
 	}
 }
 
-func (l *logger) LogError(ctx context.Context, err error, message string) {
+func (l *Logger) LogError(ctx context.Context, err error, message string) {
 	if err != nil {
 		pc := make([]uintptr, 10)
 		n := runtime.Callers(2, pc)

@@ -5,28 +5,28 @@ import (
 	"errors"
 
 	apperrors "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/repository"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/repository/user"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
-type Logger interface {
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-	Error(msg string, args ...any)
+type UserRepository interface {
+	Create(ctx context.Context, user *model.User) (*model.User, error)
+	GetByID(ctx context.Context, id uint64) (*model.User, error)
+	Update(ctx context.Context, user *model.User) (*model.User, error)
+	Delete(ctx context.Context, id uint64) error
 }
 
-type userService struct {
-	repo repository.UserRepository
-	log  Logger
+type UserService struct {
+	repo UserRepository
+	log  logger.Logger
 }
 
-func NewUserService(log Logger, repo repository.UserRepository) service.UserService {
-	return &userService{log: log, repo: repo}
+func NewUserService(log logger.Logger, repo UserRepository) *UserService {
+	return &UserService{log: log, repo: repo}
 }
 
-func (s *userService) Create(ctx context.Context, tgID uint64) (*model.User, error) {
+func (s *UserService) Create(ctx context.Context, tgID uint64) (*model.User, error) {
 	newUser := &model.User{TgID: tgID}
 
 	newUser, err := s.repo.Create(ctx, newUser)
@@ -41,7 +41,7 @@ func (s *userService) Create(ctx context.Context, tgID uint64) (*model.User, err
 	return newUser, nil
 }
 
-func (s *userService) GetByID(ctx context.Context, id uint64) (*model.User, error) {
+func (s *UserService) GetByID(ctx context.Context, id uint64) (*model.User, error) {
 	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {
@@ -54,8 +54,8 @@ func (s *userService) GetByID(ctx context.Context, id uint64) (*model.User, erro
 	return result, nil
 }
 
-func (s *userService) Update(ctx context.Context, id, newTgID uint64) (*model.User, error) {
-	oldUser, err := s.GetByID(ctx, id)
+func (s *UserService) Update(ctx context.Context, id, newTgID uint64) (*model.User, error) {
+	oldUser, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {
 			s.log.Warn("user not found", "error", err)
@@ -79,7 +79,7 @@ func (s *userService) Update(ctx context.Context, id, newTgID uint64) (*model.Us
 	return oldUser, err
 }
 
-func (s *userService) Delete(ctx context.Context, id uint64) error {
+func (s *UserService) Delete(ctx context.Context, id uint64) error {
 	err := s.repo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {

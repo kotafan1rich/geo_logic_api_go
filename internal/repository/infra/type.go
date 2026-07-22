@@ -11,15 +11,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type infraTypeRepository struct {
+type InfraTypeRepository struct {
 	db database.DB
 }
 
-func NewInfraTypeRepository(db database.DB) *infraTypeRepository {
-	return &infraTypeRepository{db: db}
+func NewInfraTypeRepository(db database.DB) *InfraTypeRepository {
+	return &InfraTypeRepository{db: db}
 }
 
-func (t *infraTypeRepository) Create(ctx context.Context, infraType *model.InfraType) (*model.InfraType, error) {
+func (t *InfraTypeRepository) Create(ctx context.Context, infraType *model.InfraType) (*model.InfraType, error) {
 	typeModel := dbmodel.ToTypeModel(infraType)
 	err := t.db.GORM().WithContext(ctx).Create(&typeModel).Error
 	if err != nil {
@@ -33,7 +33,7 @@ func (t *infraTypeRepository) Create(ctx context.Context, infraType *model.Infra
 	return infraType, nil
 }
 
-func (t *infraTypeRepository) GetByID(ctx context.Context, id uint64) (*model.InfraType, error) {
+func (t *InfraTypeRepository) GetByID(ctx context.Context, id uint64) (*model.InfraType, error) {
 	var typeModel dbmodel.InfraType
 	err := t.db.GORM().WithContext(ctx).First(&typeModel, id).Error
 	if err != nil {
@@ -46,7 +46,7 @@ func (t *infraTypeRepository) GetByID(ctx context.Context, id uint64) (*model.In
 	return dbmodel.ToType(&typeModel), nil
 }
 
-func (t *infraTypeRepository) Update(ctx context.Context, infraType *model.InfraType) (*model.InfraType, error) {
+func (t *InfraTypeRepository) Update(ctx context.Context, infraType *model.InfraType) (*model.InfraType, error) {
 	typeModel := dbmodel.ToTypeModel(infraType)
 	result := t.db.GORM().WithContext(ctx).Model(&dbmodel.InfraType{}).Where("id = ?", infraType.ID).Updates(map[string]any{
 		"slug":       typeModel.Slug,
@@ -68,7 +68,7 @@ func (t *infraTypeRepository) Update(ctx context.Context, infraType *model.Infra
 	return infraType, nil
 }
 
-func (t *infraTypeRepository) Delete(ctx context.Context, id uint64) error {
+func (t *InfraTypeRepository) Delete(ctx context.Context, id uint64) error {
 	result := t.db.GORM().WithContext(ctx).Delete(&dbmodel.InfraType{}, id)
 	if result.Error != nil {
 		return result.Error

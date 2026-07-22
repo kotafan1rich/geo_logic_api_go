@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,14 +9,21 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
 	gendto "github.com/kotafan1rich/geo_logic_api_go/internal/handler/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user/dto"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 )
 
-type userHandler struct {
-	service service.UserService
+type UserService interface {
+	Create(ctx context.Context, tgID uint64) (*model.User, error)
+	GetByID(ctx context.Context, id uint64) (*model.User, error)
+	Update(ctx context.Context, id, newTgID uint64) (*model.User, error)
+	Delete(ctx context.Context, id uint64) error
 }
 
-func NewHandler(service service.UserService) *userHandler {
+type userHandler struct {
+	service UserService
+}
+
+func NewHandler(service UserService) *userHandler {
 	return &userHandler{service: service}
 }
 

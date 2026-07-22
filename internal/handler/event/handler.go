@@ -1,7 +1,9 @@
 package event
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/errors"
@@ -9,14 +11,21 @@ import (
 	gendto "github.com/kotafan1rich/geo_logic_api_go/internal/handler/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/event/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
 )
 
-type eventHandler struct {
-	service service.EventService
+type EventService interface {
+	Create(ctx context.Context, lat, long float64, date time.Time, info *string) (*model.Event, error)
+	GetByID(ctx context.Context, id uint64) (*model.Event, error)
+	Update(ctx context.Context, id uint64, lat, long *float64, date *time.Time, info *string) (*model.Event, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint, radius *uint16) ([]model.Event, error)
 }
 
-func NewHandler(service service.EventService) *eventHandler {
+type eventHandler struct {
+	service EventService
+}
+
+func NewHandler(service EventService) *eventHandler {
 	return &eventHandler{service: service}
 }
 

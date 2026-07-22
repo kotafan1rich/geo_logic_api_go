@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,14 +9,21 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler"
 	gendto "github.com/kotafan1rich/geo_logic_api_go/internal/handler/dto"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infra/dto"
-	"github.com/kotafan1rich/geo_logic_api_go/internal/service"
+	"github.com/kotafan1rich/geo_logic_api_go/internal/model"
 )
 
-type typeHandler struct {
-	service service.InfraTypeService
+type InfraTypeService interface {
+	Create(ctx context.Context, slug, name string, weight float64, maxRadius uint16) (*model.InfraType, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfraType, error)
+	Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfraType, error)
+	Delete(ctx context.Context, id uint64) error
 }
 
-func NewTypeHandler(service service.InfraTypeService) *typeHandler {
+type typeHandler struct {
+	service InfraTypeService
+}
+
+func NewTypeHandler(service InfraTypeService) *typeHandler {
 	return &typeHandler{service: service}
 }
 
