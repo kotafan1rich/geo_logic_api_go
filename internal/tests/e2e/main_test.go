@@ -76,6 +76,7 @@ func TestMain(m *testing.M) {
 	os.Setenv("DB_USER", testDBUser)
 	os.Setenv("DB_PASSWORD", testDBPassword)
 	os.Setenv("DB_NAME", testDBName)
+	os.Setenv("LOG_FORMAT", "json")
 
 	os.Setenv("SERVER_PORT", "8081")
 

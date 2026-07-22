@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,10 @@ func ErrorHandlerMiddleware(log logger.Logger) gin.HandlerFunc {
 			}
 			if appErr, ok := errors.AsType[*gin.Error](err); ok {
 				if appErr.Type == gin.ErrorTypeBind {
-					log.Warn("validation error", "error", appErr)
+					log.Warn(
+						"validation error",
+						slog.String("error", appErr.Error()),
+					)
 					c.JSON(http.StatusBadRequest, gin.H{
 						"success": false,
 						"error":   "Validation failed",

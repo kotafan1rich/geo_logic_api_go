@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 
 	apperrors "github.com/kotafan1rich/geo_logic_api_go/internal/errors"
@@ -37,10 +38,16 @@ func (s *EventService) Create(ctx context.Context, lat, long float64, date time.
 	geopoint, err := model.NewGeoPoint(lat, long)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidLat) || errors.Is(err, apperrors.ErrInvalidLong) {
-			s.log.Warn("validation error", "error", err)
+			s.log.Warn(
+				"validation error",
+				slog.String("error", err.Error()),
+			)
 			return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 		}
-		s.log.Error("error creating event", "error", err)
+		s.log.Error(
+			"error creating event",
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 	eventToCreate := model.NewEvent(*geopoint, date, info)
@@ -48,10 +55,16 @@ func (s *EventService) Create(ctx context.Context, lat, long float64, date time.
 	createdEvent, err := s.repo.Create(ctx, eventToCreate)
 	if err != nil {
 		if errors.Is(err, event.ErrEventAlreadyExists) {
-			s.log.Warn("error creating event", "error", err)
+			s.log.Warn(
+				"event already exists",
+				slog.String("error", err.Error()),
+			)
 			return nil, apperrors.Wrap(err, apperrors.ErrConflict)
 		}
-		s.log.Error("error creating event", "error", err)
+		s.log.Error(
+			"error creating event",
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 	return createdEvent, nil
@@ -61,10 +74,17 @@ func (s *EventService) GetByID(ctx context.Context, id uint64) (*model.Event, er
 	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, event.ErrEventNotFound) {
-			s.log.Warn("event not found", "error", err)
+			s.log.Warn(
+				"event not found",
+				slog.Uint64("id", id),
+				slog.String("error", err.Error()),
+			)
 			return nil, apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
-		s.log.Error("error getting event", "error", err)
+		s.log.Error(
+			"error getting event",
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 	return result, nil
@@ -74,26 +94,44 @@ func (s *EventService) Update(ctx context.Context, id uint64, lat, long *float64
 	oldEvent, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, event.ErrEventNotFound) {
-			s.log.Warn("event not found", "error", err)
+			s.log.Warn(
+				"event not found",
+				slog.Uint64("id", id),
+				slog.String("error", err.Error()),
+			)
 			return nil, apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
-		s.log.Error("error getting event", "error", err)
+		s.log.Error(
+			"error getting event",
+			slog.Uint64("id", id),
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 
 	err = oldEvent.Update(lat, long, date, info)
 	if err != nil {
-		s.log.Warn("validation error", "error", err)
+		s.log.Warn(
+			"validation error",
+			slog.Uint64("id", id),
+			slog.String("error", err.Error()),
+		)
 		return nil, apperrors.Wrap(err, apperrors.ValidationError(err.Error()))
 	}
 
 	updatedEvent, err := s.repo.Update(ctx, oldEvent)
 	if err != nil {
 		if errors.Is(err, event.ErrEventAlreadyExists) {
-			s.log.Warn("error updating event", "error", err)
+			s.log.Warn(
+				"error updating event",
+				slog.String("error", err.Error()),
+			)
 			return nil, apperrors.Wrap(err, apperrors.ErrConflict)
 		}
-		s.log.Error("error updating event", "error", err)
+		s.log.Error(
+			"error updating event",
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 	return updatedEvent, nil
@@ -103,10 +141,16 @@ func (s *EventService) Delete(ctx context.Context, id uint64) error {
 	err := s.repo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, event.ErrEventNotFound) {
-			s.log.Warn("event not found", "error", err)
+			s.log.Warn(
+				"event not found",
+				slog.String("error", err.Error()),
+			)
 			return apperrors.Wrap(err, apperrors.ErrNotFound)
 		}
-		s.log.Error("error deleting event", "error", err)
+		s.log.Error(
+			"error deleting event",
+			slog.String("error", err.Error()),
+		)
 		return err
 	}
 	return nil
@@ -119,13 +163,19 @@ func (s *EventService) Near(ctx context.Context, geopoint *model.GeoPoint, radiu
 	} else {
 		finalRadius = *radius
 		if finalRadius == 0 || finalRadius > maxRadius {
-			s.log.Warn("invalid radius", "error", apperrors.ErrInvalidRadius)
+			s.log.Warn(
+				"invalid radius",
+				slog.String("error", apperrors.ErrInvalidRadius.Error()),
+			)
 			return nil, apperrors.Wrap(apperrors.ErrInvalidRadius, apperrors.ValidationError(apperrors.ErrInvalidRadius.Error()))
 		}
 	}
 	results, err := s.repo.Near(ctx, geopoint, finalRadius)
 	if err != nil {
-		s.log.Error("error getting near events", "error", err)
+		s.log.Error(
+			"error getting near events",
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 	return results, nil
