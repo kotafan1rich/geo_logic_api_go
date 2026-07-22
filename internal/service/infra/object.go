@@ -19,16 +19,24 @@ type InfraRepository interface {
 	Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error)
 }
 
-type InfraService struct {
+type InfraService interface {
+	Create(ctx context.Context, lat, long float64, address string, name *string, typeID uint64) (*model.InfraObject, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfraObject, error)
+	Update(ctx context.Context, id uint64, lat, long *float64, address, name *string, typeID *uint64) (*model.InfraObject, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error)
+}
+
+type infraService struct {
 	repo InfraRepository
 	log  logger.Logger
 }
 
-func NewInfraService(log logger.Logger, repo InfraRepository) *InfraService {
-	return &InfraService{log: log, repo: repo}
+func NewInfraService(log logger.Logger, repo InfraRepository) InfraService {
+	return &infraService{log: log, repo: repo}
 }
 
-func (i *InfraService) Create(ctx context.Context, lat, long float64, address string, name *string, infraID uint64) (*model.InfraObject, error) {
+func (i *infraService) Create(ctx context.Context, lat, long float64, address string, name *string, infraID uint64) (*model.InfraObject, error) {
 	geopoint, err := model.NewGeoPoint(lat, long)
 	if err != nil {
 		i.log.Warn(
@@ -57,7 +65,7 @@ func (i *InfraService) Create(ctx context.Context, lat, long float64, address st
 	return newInfra, nil
 }
 
-func (i *InfraService) GetByID(ctx context.Context, id uint64) (*model.InfraObject, error) {
+func (i *infraService) GetByID(ctx context.Context, id uint64) (*model.InfraObject, error) {
 	result, err := i.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, infra.ErrInfraNotFound) {
@@ -70,7 +78,7 @@ func (i *InfraService) GetByID(ctx context.Context, id uint64) (*model.InfraObje
 	return result, nil
 }
 
-func (i *InfraService) Update(ctx context.Context, id uint64, lat, long *float64, address, name *string, infraID *uint64) (*model.InfraObject, error) {
+func (i *infraService) Update(ctx context.Context, id uint64, lat, long *float64, address, name *string, infraID *uint64) (*model.InfraObject, error) {
 	oldInfra, err := i.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, infra.ErrInfraNotFound) {
@@ -112,7 +120,7 @@ func (i *InfraService) Update(ctx context.Context, id uint64, lat, long *float64
 	return updatedInfra, nil
 }
 
-func (i *InfraService) Delete(ctx context.Context, id uint64) error {
+func (i *infraService) Delete(ctx context.Context, id uint64) error {
 	err := i.repo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, infra.ErrInfraNotFound) {
@@ -128,7 +136,7 @@ func (i *InfraService) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (i *InfraService) Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error) {
+func (i *infraService) Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error) {
 	results, err := i.repo.Near(ctx, geopoint)
 	if err != nil {
 		i.log.Error("error getting near events", slog.String("error", err.Error()))

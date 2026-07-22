@@ -24,19 +24,19 @@ import (
 type diContainer struct {
 	db database.DB
 
-	userRepo      *userrepo.UserRepository
-	rentRepo      *rentrepo.RentRepository
-	eventRepo     *eventrepo.EventRepository
-	infraTypeRepo *infrarepo.InfraTypeRepository
-	infraRepo     *infrarepo.InfraRepository
+	userRepo      userrepo.UserRepository
+	rentRepo      rentrepo.RentRepository
+	eventRepo     eventrepo.EventRepository
+	infraTypeRepo infrarepo.InfraTypeRepository
+	infraRepo     infrarepo.InfraRepository
 
-	userService      *userservice.UserService
-	rentService      *rentservice.RentService
-	eventService     *eventservice.EventService
-	infraTypeService *infraservice.TypeService
-	infraService     *infraservice.InfraService
+	userService      userservice.UserService
+	rentService      rentservice.RentService
+	eventService     eventservice.EventService
+	infraTypeService infraservice.InfraTypeService
+	infraService     infraservice.InfraService
 
-	handler *api.HttpHandler
+	handler api.HttpHandler
 
 	log *logger.Logger
 }
@@ -59,7 +59,7 @@ func (d *diContainer) DB() database.DB {
 	return d.db
 }
 
-func (d *diContainer) UserRepo() *userrepo.UserRepository {
+func (d *diContainer) UserRepo() userrepo.UserRepository {
 	if d.userRepo == nil {
 		d.userRepo = userrepo.NewRepository(d.DB())
 	}
@@ -67,7 +67,7 @@ func (d *diContainer) UserRepo() *userrepo.UserRepository {
 	return d.userRepo
 }
 
-func (d *diContainer) RentRepo() *rentrepo.RentRepository {
+func (d *diContainer) RentRepo() rentrepo.RentRepository {
 	if d.rentRepo == nil {
 		d.rentRepo = rentrepo.NewRepository(d.DB())
 	}
@@ -75,7 +75,7 @@ func (d *diContainer) RentRepo() *rentrepo.RentRepository {
 	return d.rentRepo
 }
 
-func (d *diContainer) EventRepo() *eventrepo.EventRepository {
+func (d *diContainer) EventRepo() eventrepo.EventRepository {
 	if d.eventRepo == nil {
 		d.eventRepo = eventrepo.NewRepository(d.DB())
 	}
@@ -83,7 +83,7 @@ func (d *diContainer) EventRepo() *eventrepo.EventRepository {
 	return d.eventRepo
 }
 
-func (d *diContainer) InfraTypeRepo() *infrarepo.InfraTypeRepository {
+func (d *diContainer) InfraTypeRepo() infrarepo.InfraTypeRepository {
 	if d.infraTypeRepo == nil {
 		d.infraTypeRepo = infrarepo.NewInfraTypeRepository(d.DB())
 	}
@@ -91,7 +91,7 @@ func (d *diContainer) InfraTypeRepo() *infrarepo.InfraTypeRepository {
 	return d.infraTypeRepo
 }
 
-func (d *diContainer) InfraRepo() *infrarepo.InfraRepository {
+func (d *diContainer) InfraRepo() infrarepo.InfraRepository {
 	if d.infraRepo == nil {
 		d.infraRepo = infrarepo.NewInfraRepository(d.DB())
 	}
@@ -99,7 +99,7 @@ func (d *diContainer) InfraRepo() *infrarepo.InfraRepository {
 	return d.infraRepo
 }
 
-func (d *diContainer) UserService() *userservice.UserService {
+func (d *diContainer) UserService() userservice.UserService {
 	if d.userService == nil {
 		d.userService = userservice.NewUserService(*d.Logger(), d.UserRepo())
 	}
@@ -107,35 +107,35 @@ func (d *diContainer) UserService() *userservice.UserService {
 	return d.userService
 }
 
-func (d *diContainer) RentService() *rentservice.RentService {
+func (d *diContainer) RentService() rentservice.RentService {
 	if d.rentService == nil {
 		d.rentService = rentservice.NewRentService(*d.Logger(), d.RentRepo())
 	}
 	return d.rentService
 }
 
-func (d *diContainer) EventService() *eventservice.EventService {
+func (d *diContainer) EventService() eventservice.EventService {
 	if d.eventService == nil {
 		d.eventService = eventservice.NewEventService(*d.Logger(), d.EventRepo())
 	}
 	return d.eventService
 }
 
-func (d *diContainer) InfraTypeService() *infraservice.TypeService {
+func (d *diContainer) InfraTypeService() infraservice.InfraTypeService {
 	if d.infraTypeService == nil {
 		d.infraTypeService = infraservice.NewTypeService(*d.Logger(), d.InfraTypeRepo())
 	}
 	return d.infraTypeService
 }
 
-func (d *diContainer) InfraService() *infraservice.InfraService {
+func (d *diContainer) InfraService() infraservice.InfraService {
 	if d.infraService == nil {
 		d.infraService = infraservice.NewInfraService(*d.Logger(), d.InfraRepo())
 	}
 	return d.infraService
 }
 
-func (d *diContainer) Handler() *api.HttpHandler {
+func (d *diContainer) Handler() api.HttpHandler {
 	if d.handler == nil {
 		userHandler := user.NewHandler(d.UserService())
 		rentHandler := rent.NewHandler(d.RentService())

@@ -7,7 +7,11 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/middleware"
 )
 
-type HttpHandler struct {
+type HttpHandler interface {
+	Routes() *gin.Engine
+}
+
+type httpHandler struct {
 	log              logger.Logger
 	userHandler      handler.UserHandler
 	rentHandler      handler.RentHandler
@@ -16,8 +20,8 @@ type HttpHandler struct {
 	infraHandler     handler.InfraHandler
 }
 
-func NewHttpHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler, eventHandler handler.EventHandler, infraTypeHandler handler.InfraTypeHandler, infraHandler handler.InfraHandler) *HttpHandler {
-	return &HttpHandler{
+func NewHttpHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler, eventHandler handler.EventHandler, infraTypeHandler handler.InfraTypeHandler, infraHandler handler.InfraHandler) HttpHandler {
+	return &httpHandler{
 		log:              log,
 		userHandler:      userHandler,
 		rentHandler:      rentHandler,
@@ -27,7 +31,7 @@ func NewHttpHandler(log logger.Logger, userHandler handler.UserHandler, rentHand
 	}
 }
 
-func (h *HttpHandler) Routes() *gin.Engine {
+func (h *httpHandler) Routes() *gin.Engine {
 	router := gin.New()
 
 	router.Use(

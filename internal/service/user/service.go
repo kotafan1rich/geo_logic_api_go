@@ -18,16 +18,23 @@ type UserRepository interface {
 	Delete(ctx context.Context, id uint64) error
 }
 
-type UserService struct {
+type UserService interface {
+	Create(ctx context.Context, tgID uint64) (*model.User, error)
+	GetByID(ctx context.Context, id uint64) (*model.User, error)
+	Update(ctx context.Context, id, newTgID uint64) (*model.User, error)
+	Delete(ctx context.Context, id uint64) error
+}
+
+type userService struct {
 	repo UserRepository
 	log  logger.Logger
 }
 
-func NewUserService(log logger.Logger, repo UserRepository) *UserService {
-	return &UserService{log: log, repo: repo}
+func NewUserService(log logger.Logger, repo UserRepository) UserService {
+	return &userService{log: log, repo: repo}
 }
 
-func (s *UserService) Create(ctx context.Context, tgID uint64) (*model.User, error) {
+func (s *userService) Create(ctx context.Context, tgID uint64) (*model.User, error) {
 	newUser := &model.User{TgID: tgID}
 
 	newUser, err := s.repo.Create(ctx, newUser)
@@ -50,7 +57,7 @@ func (s *UserService) Create(ctx context.Context, tgID uint64) (*model.User, err
 	return newUser, nil
 }
 
-func (s *UserService) GetByID(ctx context.Context, id uint64) (*model.User, error) {
+func (s *userService) GetByID(ctx context.Context, id uint64) (*model.User, error) {
 	result, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {
@@ -71,7 +78,7 @@ func (s *UserService) GetByID(ctx context.Context, id uint64) (*model.User, erro
 	return result, nil
 }
 
-func (s *UserService) Update(ctx context.Context, id, newTgID uint64) (*model.User, error) {
+func (s *userService) Update(ctx context.Context, id, newTgID uint64) (*model.User, error) {
 	oldUser, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {
@@ -112,7 +119,7 @@ func (s *UserService) Update(ctx context.Context, id, newTgID uint64) (*model.Us
 	return oldUser, err
 }
 
-func (s *UserService) Delete(ctx context.Context, id uint64) error {
+func (s *userService) Delete(ctx context.Context, id uint64) error {
 	err := s.repo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, user.ErrUserNotFound) {

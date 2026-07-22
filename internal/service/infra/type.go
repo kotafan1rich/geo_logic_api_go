@@ -18,16 +18,23 @@ type InfraTypeRepository interface {
 	Delete(ctx context.Context, id uint64) error
 }
 
-type TypeService struct {
+type InfraTypeService interface {
+	Create(ctx context.Context, slug, name string, weight float64, maxRadius uint16) (*model.InfraType, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfraType, error)
+	Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfraType, error)
+	Delete(ctx context.Context, id uint64) error
+}
+
+type typeService struct {
 	repo InfraTypeRepository
 	log  logger.Logger
 }
 
-func NewTypeService(log logger.Logger, repo InfraTypeRepository) *TypeService {
-	return &TypeService{log: log, repo: repo}
+func NewTypeService(log logger.Logger, repo InfraTypeRepository) InfraTypeService {
+	return &typeService{log: log, repo: repo}
 }
 
-func (t *TypeService) Create(ctx context.Context, slug, name string, weight float64, maxRadius uint16) (*model.InfraType, error) {
+func (t *typeService) Create(ctx context.Context, slug, name string, weight float64, maxRadius uint16) (*model.InfraType, error) {
 	newType, err := model.NewInfraType(slug, name, weight, maxRadius)
 	if err != nil {
 		return nil, apperrors.ValidationError(err.Error())
@@ -55,7 +62,7 @@ func (t *TypeService) Create(ctx context.Context, slug, name string, weight floa
 	return newType, nil
 }
 
-func (t *TypeService) GetByID(ctx context.Context, id uint64) (*model.InfraType, error) {
+func (t *typeService) GetByID(ctx context.Context, id uint64) (*model.InfraType, error) {
 	result, err := t.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, infra.ErrInfraTypeNotFound) {
@@ -75,7 +82,7 @@ func (t *TypeService) GetByID(ctx context.Context, id uint64) (*model.InfraType,
 	return result, nil
 }
 
-func (t *TypeService) Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfraType, error) {
+func (t *typeService) Update(ctx context.Context, id uint64, slug, name *string, weight *float64, maxRadius *uint16) (*model.InfraType, error) {
 	oldType, err := t.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, infra.ErrInfraTypeNotFound) {
@@ -124,7 +131,7 @@ func (t *TypeService) Update(ctx context.Context, id uint64, slug, name *string,
 	return updatedType, nil
 }
 
-func (t *TypeService) Delete(ctx context.Context, id uint64) error {
+func (t *typeService) Delete(ctx context.Context, id uint64) error {
 	err := t.repo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, infra.ErrInfraTypeNotFound) {

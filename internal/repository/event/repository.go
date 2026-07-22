@@ -11,15 +11,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type EventRepository struct {
+type EventRepository interface {
+	Create(ctx context.Context, event *model.Event) (*model.Event, error)
+	GetByID(ctx context.Context, id uint64) (*model.Event, error)
+	Update(ctx context.Context, event *model.Event) (*model.Event, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Event, error)
+}
+
+type eventRepository struct {
 	db database.DB
 }
 
-func NewRepository(db database.DB) *EventRepository {
-	return &EventRepository{db: db}
+func NewRepository(db database.DB) EventRepository {
+	return &eventRepository{db: db}
 }
 
-func (r *EventRepository) Create(ctx context.Context, event *model.Event) (*model.Event, error) {
+func (r *eventRepository) Create(ctx context.Context, event *model.Event) (*model.Event, error) {
 	eventModel := dbmodel.ToEventModel(event)
 	err := r.db.GORM().WithContext(ctx).Create(eventModel).Error
 	if err != nil {
@@ -32,7 +40,7 @@ func (r *EventRepository) Create(ctx context.Context, event *model.Event) (*mode
 	return dbmodel.ToEvent(eventModel), nil
 }
 
-func (r *EventRepository) GetByID(ctx context.Context, id uint64) (*model.Event, error) {
+func (r *eventRepository) GetByID(ctx context.Context, id uint64) (*model.Event, error) {
 	var event dbmodel.Event
 	err := r.db.GORM().WithContext(ctx).First(&event, id).Error
 	if err != nil {
@@ -44,7 +52,7 @@ func (r *EventRepository) GetByID(ctx context.Context, id uint64) (*model.Event,
 	return dbmodel.ToEvent(&event), err
 }
 
-func (r *EventRepository) Update(ctx context.Context, event *model.Event) (*model.Event, error) {
+func (r *eventRepository) Update(ctx context.Context, event *model.Event) (*model.Event, error) {
 	eventModel := dbmodel.ToEventModel(event)
 	result := r.db.GORM().WithContext(ctx).Model(&dbmodel.Event{}).Where("id = ?", eventModel.ID).Updates(map[string]any{
 		"date":     eventModel.Date,
@@ -65,7 +73,7 @@ func (r *EventRepository) Update(ctx context.Context, event *model.Event) (*mode
 	return event, nil
 }
 
-func (r *EventRepository) Delete(ctx context.Context, id uint64) error {
+func (r *eventRepository) Delete(ctx context.Context, id uint64) error {
 	result := r.db.GORM().WithContext(ctx).Delete(&dbmodel.Event{}, id)
 	if result.Error != nil {
 		return result.Error
@@ -77,7 +85,7 @@ func (r *EventRepository) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (r *EventRepository) Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Event, error) {
+func (r *eventRepository) Near(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Event, error) {
 	var events []dbmodel.Event
 
 	err := r.db.GORM().WithContext(ctx).Model(&dbmodel.Event{}).Where(

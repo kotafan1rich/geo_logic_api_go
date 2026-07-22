@@ -11,15 +11,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+type UserRepository interface {
+	Create(ctx context.Context, user *model.User) (*model.User, error)
+	GetByID(ctx context.Context, id uint64) (*model.User, error)
+	Update(ctx context.Context, user *model.User) (*model.User, error)
+	Delete(ctx context.Context, id uint64) error
+}
+
+type userRepository struct {
 	db database.DB
 }
 
-func NewRepository(db database.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewRepository(db database.DB) UserRepository {
+	return &userRepository{db: db}
 }
 
-func (r *UserRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
+func (r *userRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	userModel := dbmodel.ToUserModel(user)
 	err := r.db.GORM().WithContext(ctx).Create(&userModel).Error
 	if err != nil {
@@ -33,7 +40,7 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) (*model.U
 	return user, nil
 }
 
-func (r *UserRepository) GetByID(ctx context.Context, id uint64) (*model.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id uint64) (*model.User, error) {
 	var user dbmodel.User
 	err := r.db.GORM().WithContext(ctx).First(&user, id).Error
 	if err != nil {
@@ -46,7 +53,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uint64) (*model.User, e
 	return dbmodel.ToUser(&user), nil
 }
 
-func (r *UserRepository) Update(ctx context.Context, user *model.User) (*model.User, error) {
+func (r *userRepository) Update(ctx context.Context, user *model.User) (*model.User, error) {
 	userModel := dbmodel.ToUserModel(user)
 	result := r.db.GORM().WithContext(ctx).Model(&userModel).Select("*").Updates(&userModel)
 	if result.Error != nil {
@@ -63,7 +70,7 @@ func (r *UserRepository) Update(ctx context.Context, user *model.User) (*model.U
 	return user, nil
 }
 
-func (r *UserRepository) Delete(ctx context.Context, id uint64) error {
+func (r *userRepository) Delete(ctx context.Context, id uint64) error {
 	result := r.db.GORM().WithContext(ctx).Delete(&dbmodel.User{}, id)
 	if result.Error != nil {
 		return result.Error

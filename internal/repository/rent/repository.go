@@ -11,15 +11,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type RentRepository struct {
+type RentRepository interface {
+	Create(ctx context.Context, rent *model.Rent) (*model.Rent, error)
+	GetByID(ctx context.Context, id uint64) (*model.Rent, error)
+	Update(ctx context.Context, rent *model.Rent) (*model.Rent, error)
+	Delete(ctx context.Context, id uint64) error
+	Available(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Rent, error)
+}
+
+type rentRepository struct {
 	db database.DB
 }
 
-func NewRepository(db database.DB) *RentRepository {
-	return &RentRepository{db: db}
+func NewRepository(db database.DB) RentRepository {
+	return &rentRepository{db: db}
 }
 
-func (r *RentRepository) Create(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
+func (r *rentRepository) Create(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
 	rentModel := dbmodel.ToRentModel(rent)
 	err := r.db.GORM().WithContext(ctx).Create(rentModel).Error
 	if err != nil {
@@ -32,7 +40,7 @@ func (r *RentRepository) Create(ctx context.Context, rent *model.Rent) (*model.R
 	return dbmodel.ToRent(rentModel), nil
 }
 
-func (r *RentRepository) GetByID(ctx context.Context, id uint64) (*model.Rent, error) {
+func (r *rentRepository) GetByID(ctx context.Context, id uint64) (*model.Rent, error) {
 	var rent dbmodel.Rent
 	err := r.db.GORM().WithContext(ctx).First(&rent, id).Error
 	if err != nil {
@@ -44,7 +52,7 @@ func (r *RentRepository) GetByID(ctx context.Context, id uint64) (*model.Rent, e
 	return dbmodel.ToRent(&rent), err
 }
 
-func (r *RentRepository) Update(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
+func (r *rentRepository) Update(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
 	rentModel := dbmodel.ToRentModel(rent)
 	result := r.db.GORM().WithContext(ctx).Model(&dbmodel.Rent{}).Where("id = ?", rentModel.ID).Updates(map[string]any{
 		"address":  rentModel.Address,
@@ -65,7 +73,7 @@ func (r *RentRepository) Update(ctx context.Context, rent *model.Rent) (*model.R
 	return rent, nil
 }
 
-func (r *RentRepository) Delete(ctx context.Context, id uint64) error {
+func (r *rentRepository) Delete(ctx context.Context, id uint64) error {
 	result := r.db.GORM().WithContext(ctx).Delete(&dbmodel.Rent{}, id)
 	if result.Error != nil {
 		return result.Error
@@ -77,7 +85,7 @@ func (r *RentRepository) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (r *RentRepository) Available(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Rent, error) {
+func (r *rentRepository) Available(ctx context.Context, geopoint *model.GeoPoint, radius uint16) ([]model.Rent, error) {
 	var rents []dbmodel.Rent
 
 	err := r.db.GORM().WithContext(ctx).Model(&dbmodel.Rent{}).Where(

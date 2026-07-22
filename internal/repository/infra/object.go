@@ -11,15 +11,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type InfraRepository struct {
+type InfraRepository interface {
+	Create(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error)
+	GetByID(ctx context.Context, id uint64) (*model.InfraObject, error)
+	Update(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error)
+	Delete(ctx context.Context, id uint64) error
+	Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error)
+}
+
+type infraRepository struct {
 	db database.DB
 }
 
-func NewInfraRepository(db database.DB) *InfraRepository {
-	return &InfraRepository{db: db}
+func NewInfraRepository(db database.DB) InfraRepository {
+	return &infraRepository{db: db}
 }
 
-func (r *InfraRepository) Create(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error) {
+func (r *infraRepository) Create(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error) {
 	dbInfra := dbmodel.ToObjectModel(infra)
 	err := r.db.GORM().WithContext(ctx).Create(&dbInfra).Error
 	if err != nil {
@@ -41,7 +49,7 @@ func (r *InfraRepository) Create(ctx context.Context, infra *model.InfraObject) 
 	return dbmodel.ToObject(dbInfra), nil
 }
 
-func (r *InfraRepository) GetByID(ctx context.Context, id uint64) (*model.InfraObject, error) {
+func (r *infraRepository) GetByID(ctx context.Context, id uint64) (*model.InfraObject, error) {
 	var infra dbmodel.InfraObject
 	err := r.db.GORM().WithContext(ctx).Preload("Type").First(&infra, id).Error
 	if err != nil {
@@ -53,7 +61,7 @@ func (r *InfraRepository) GetByID(ctx context.Context, id uint64) (*model.InfraO
 	return dbmodel.ToObject(&infra), err
 }
 
-func (r *InfraRepository) Update(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error) {
+func (r *infraRepository) Update(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error) {
 	infraModel := dbmodel.ToObjectModel(infra)
 	result := r.db.GORM().WithContext(ctx).Model(&dbmodel.InfraObject{}).Where("id = ?", infraModel.ID).Updates(map[string]any{
 		"address":  infraModel.Address,
@@ -79,7 +87,7 @@ func (r *InfraRepository) Update(ctx context.Context, infra *model.InfraObject) 
 	return infra, nil
 }
 
-func (r *InfraRepository) Delete(ctx context.Context, id uint64) error {
+func (r *infraRepository) Delete(ctx context.Context, id uint64) error {
 	result := r.db.GORM().WithContext(ctx).Delete(&dbmodel.InfraObject{}, id)
 	if result.Error != nil {
 		return result.Error
@@ -91,7 +99,7 @@ func (r *InfraRepository) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (r *InfraRepository) Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error) {
+func (r *infraRepository) Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error) {
 	var infras []dbmodel.InfraObject
 
 	err := r.db.GORM().WithContext(ctx).
