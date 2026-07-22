@@ -18,7 +18,6 @@ type InfraRepository interface {
 	Near(ctx context.Context, geopoint *model.GeoPoint) ([]model.InfraObject, error)
 }
 
-
 type InfraService struct {
 	repo InfraRepository
 	log  logger.Logger
