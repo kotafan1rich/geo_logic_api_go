@@ -528,18 +528,43 @@ paths:
           description: Infra type not found
         '400':
           description: Validation error in the request parameters
+  /tracked-locations:
+    post:
+      summary: Add a location to a user
+      operationId: addTrackedLocation
+      tags:
+        - Tracked Locations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTrackedLocationRequest'
+      responses:
+        '201':
+          description: User location created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackedLocationResponse'
+        '400':
+          description: Validation error in the request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /users/{id}/locations:
+  /tracked-locations/{id}:
     get:
       summary: Get all locations of a user
-      operationId: getUserLocations
+      operationId: getTrackedLocations
       tags:
-        - Users Locations
+        - Tracked Locations
       parameters:
         - name: id
           in: path
           required: true
-          description: Internal user ID
+          description: Internal ID
           schema:
             type: integer
             format: int64
@@ -552,56 +577,22 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserLocationResponse'
+                  $ref: '#/components/schemas/TrackedLocationResponse'
         '404':
-          description: User not found
+          description: Location not found
         '400':
           description: Validation error in the request parameters
-    post:
-      summary: Add a location to a user
-      operationId: addUserLocation
-      tags:
-        - Users Locations
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Internal user ID
-          schema:
-            type: integer
-            format: int64
-            example: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserLocationRequest'
-      responses:
-        '201':
-          description: User location created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserLocationResponse'
-        '400':
-          description: Validation error in the request body
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
-  /users/{id}/locations/{locationID}:
     patch:
       summary: Update a user location relation
-      operationId: updateUserLocation
+      operationId: updateTrackedLocation
       tags:
-        - Users Locations
+        - Tracked Locations
       parameters:
         - name: id
           in: path
           required: true
-          description: Internal user ID
+          description: Internal ID
           schema:
             type: integer
             format: int64
@@ -619,23 +610,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateUserLocationRequest'
+              $ref: '#/components/schemas/UpdateTrackedLocationRequest'
       responses:
         '200':
           description: User location updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserLocationResponse'
+                $ref: '#/components/schemas/TrackedLocationResponse'
         '400':
           description: Validation error in the request parameters
         '404':
           description: User location relation not found
     delete:
       summary: Delete a user location relation
-      operationId: deleteUserLocation
+      operationId: deleteTrackedLocation
       tags:
-        - Users Locations
+        - Tracked Locations
       parameters:
         - name: id
           in: path
@@ -1108,35 +1099,42 @@ components:
           example: "Additional information about the infra"
           description: Additional information about the infra
 
-    CreateUserLocationRequest:
+    CreateTrackedLocationRequest:
       type: object
       required:
         - location_id
       properties:
-        location_id:
-          type: integer
-          format: int64
-          example: 42
-          description: Internal identifier of the location related to the user
-        location_type:
-          type: string
-          example: "rent"
-          description: Type of the related location entity
+        lat:
+          type: number
+          format: float
+          example: 37.7749
+          description: Latitude of the infra location
+        long:
+          type: number
+          format: float
+          example: -122.4194
+          description: Longitude of the infra location
 
-    UpdateUserLocationRequest:
+    UpdateTrackedLocationRequest:
       type: object
       properties:
-        location_id:
+        user_id:
           type: integer
           format: int64
-          example: 43
-          description: New internal identifier of the location related to the user
-        location_type:
-          type: string
-          example: "infra"
-          description: New type of the related location entity
+          example: 1
+          description: Internal user ID
+        lat:
+          type: number
+          format: float
+          example: 37.7749
+          description: Latitude of the infra location
+        long:
+          type: number
+          format: float
+          example: -122.4194
+          description: Longitude of the infra location
 
-    UserLocationResponse:
+    TrackedLocationResponse:
       type: object
       properties:
         id:
@@ -1149,25 +1147,16 @@ components:
           format: int64
           example: 1
           description: Internal user ID
-        location_id:
-          type: integer
-          format: int64
-          example: 42
-          description: Internal identifier of the related location
-        location_type:
-          type: string
-          example: "rent"
-          description: Type of the related location entity
-        created_at:
-          type: string
-          format: date-time
-          example: "2026-07-13T12:00:00Z"
-          description: Creation timestamp
-        updated_at:
-          type: string
-          format: date-time
-          example: "2026-07-13T12:30:00Z"
-          description: Last update timestamp
+        lat:
+          type: number
+          format: float
+          example: 37.7749
+          description: Latitude of the infra location
+        long:
+          type: number
+          format: float
+          example: -122.4194
+          description: Longitude of the infra location
 
     CreateInfraTypeRequest:
       type: object

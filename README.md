@@ -48,10 +48,10 @@ GeoLogicApi предоставляет REST API для:
 - `created_at` — datetime
 - `updated_at` — datetime
 
-### Users_locations
+### TrakedLocations
 - `id` — PK
 - `user_id` — int (FK → Users.id)
-- `location_id` — int (FK → Locations.id)
+- `location` — geometry(Point, 4326)
 - `created_at` — datetime
 - `updated_at` — datetime
 
