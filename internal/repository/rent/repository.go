@@ -49,7 +49,7 @@ func (r *rentRepository) GetByID(ctx context.Context, id uint64) (*model.Rent, e
 		}
 		return nil, err
 	}
-	return dbmodel.ToRent(&rent), err
+	return dbmodel.ToRent(&rent), nil
 }
 
 func (r *rentRepository) Update(ctx context.Context, rent *model.Rent) (*model.Rent, error) {
