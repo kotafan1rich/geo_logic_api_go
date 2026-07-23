@@ -1,10 +1,14 @@
 package model
 
-import "time"
-
 type User struct {
-	ID        uint64
-	TgID      uint64
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID   uint64
+	TgID uint64
+}
+
+func NewUser(tgID uint64) *User {
+	return &User{TgID: tgID}
+}
+
+func (u *User) UpdateUser(tgID uint64) {
+	u.TgID = tgID
 }

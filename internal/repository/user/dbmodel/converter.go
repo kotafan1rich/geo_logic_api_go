@@ -14,7 +14,5 @@ func ToUser(userRecord *User) *model.User {
 	return &model.User{
 		ID:        userRecord.ID,
 		TgID:      userRecord.TgID,
-		CreatedAt: userRecord.CreatedAt,
-		UpdatedAt: userRecord.UpdatedAt,
 	}
 }

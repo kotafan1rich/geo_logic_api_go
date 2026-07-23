@@ -35,7 +35,7 @@ func NewUserService(log logger.Logger, repo UserRepository) UserService {
 }
 
 func (s *userService) Create(ctx context.Context, tgID uint64) (*model.User, error) {
-	newUser := &model.User{TgID: tgID}
+	newUser := model.NewUser(tgID)
 
 	newUser, err := s.repo.Create(ctx, newUser)
 	if err != nil {
@@ -97,7 +97,7 @@ func (s *userService) Update(ctx context.Context, id, newTgID uint64) (*model.Us
 		return nil, err
 	}
 	if oldUser.TgID != newTgID {
-		oldUser.TgID = newTgID
+		oldUser.UpdateUser(newTgID)
 		oldUser, err = s.repo.Update(ctx, oldUser)
 		if err != nil {
 			if errors.Is(err, user.ErrUserAlreadyExists) {
