@@ -58,7 +58,7 @@ func (r *infraRepository) GetByID(ctx context.Context, id uint64) (*model.InfraO
 		}
 		return nil, err
 	}
-	return dbmodel.ToObject(&infra), err
+	return dbmodel.ToObject(&infra), nil
 }
 
 func (r *infraRepository) Update(ctx context.Context, infra *model.InfraObject) (*model.InfraObject, error) {

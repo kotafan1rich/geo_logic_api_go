@@ -49,7 +49,7 @@ func (r *eventRepository) GetByID(ctx context.Context, id uint64) (*model.Event,
 		}
 		return nil, err
 	}
-	return dbmodel.ToEvent(&event), err
+	return dbmodel.ToEvent(&event), nil
 }
 
 func (r *eventRepository) Update(ctx context.Context, event *model.Event) (*model.Event, error) {
