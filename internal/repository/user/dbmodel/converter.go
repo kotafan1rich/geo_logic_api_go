@@ -12,7 +12,7 @@ func ToUserModel(user *model.User) *User {
 
 func ToUser(userRecord *User) *model.User {
 	return &model.User{
-		ID:        userRecord.ID,
-		TgID:      userRecord.TgID,
+		ID:   userRecord.ID,
+		TgID: userRecord.TgID,
 	}
 }
