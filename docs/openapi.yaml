@@ -732,6 +732,64 @@ paths:
         '400':
           description: Validation error in the request parameters
 
+  /rents/available/rating:
+    get:
+      summary: Get available rents with a location rating for a business type
+      description: >-
+        Planned API contract. The endpoint is not implemented yet. The rating
+        takes competitors with the InfraType linked to the selected business
+        type into account.
+      operationId: getAvailableRentsWithRating
+      tags:
+        - Rents
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: Latitude of the center point for searching available rents
+          schema:
+            type: number
+            format: float
+            example: 37.7749
+        - name: long
+          in: query
+          required: true
+          description: Longitude of the center point for searching available rents
+          schema:
+            type: number
+            format: float
+            example: -122.4194
+        - name: business_type_id
+          in: query
+          required: true
+          description: Business type used to calculate the location rating
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 1
+        - name: radius
+          in: query
+          required: false
+          description: Search radius in meters (default is 5 km)
+          schema:
+            type: integer
+            format: int32
+            example: 500
+      responses:
+        '200':
+          description: Successful response with available rents and their location ratings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailableRentResponse'
+        '400':
+          description: Validation error in the request parameters
+        '404':
+          description: Business type not found
+
   /rents/{id}:
     get:
       summary: Get rent by ID
@@ -813,6 +871,119 @@ paths:
           description: Rent not found  
         '400':
           description: Validation error in the request parameters
+
+  /business-types:
+    post:
+      summary: Create a business type
+      description: >-
+        Planned API contract. Each business type references one unique
+        InfraType whose infrastructure objects are treated as competitors.
+      operationId: createBusinessType
+      tags:
+        - BusinessTypes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBusinessTypeRequest'
+      responses:
+        '201':
+          description: Business type created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessTypeResponse'
+        '400':
+          description: Validation error in the request body
+        '404':
+          description: Referenced infra type not found
+        '409':
+          description: A business type already references this infra type
+    get:
+      summary: Get all business types
+      description: Planned API contract. Returns an unpaginated list.
+      operationId: getBusinessTypes
+      tags:
+        - BusinessTypes
+      responses:
+        '200':
+          description: Successful response with all business types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BusinessTypeResponse'
+
+  /business-types/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Internal business type ID
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
+    get:
+      summary: Get a business type by ID
+      description: Planned API contract.
+      operationId: getBusinessTypeByID
+      tags:
+        - BusinessTypes
+      responses:
+        '200':
+          description: Successful response with business type data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessTypeResponse'
+        '400':
+          description: Validation error in the path parameter
+        '404':
+          description: Business type not found
+    patch:
+      summary: Update a business type
+      description: Planned API contract.
+      operationId: updateBusinessType
+      tags:
+        - BusinessTypes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBusinessTypeRequest'
+      responses:
+        '200':
+          description: Business type updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessTypeResponse'
+        '400':
+          description: Validation error in the request
+        '404':
+          description: Business type or referenced infra type not found
+        '409':
+          description: Another business type already references this infra type
+    delete:
+      summary: Delete a business type
+      description: >-
+        Planned API contract. A business type is also deleted automatically
+        when its referenced InfraType is deleted.
+      operationId: deleteBusinessType
+      tags:
+        - BusinessTypes
+      responses:
+        '204':
+          description: Business type deleted successfully (no response body)
+        '400':
+          description: Validation error in the path parameter
+        '404':
+          description: Business type not found
 
 components:
   schemas:
@@ -906,6 +1077,19 @@ components:
           type: string
           example: "Additional information about the rents"
           description: Additional information about the rents
+
+    AvailableRentResponse:
+      allOf:
+        - $ref: '#/components/schemas/RentResponse'
+        - type: object
+          required:
+            - rating
+          properties:
+            rating:
+              type: number
+              format: float
+              example: 8.5
+              description: Rating of the rent location
 
     UpdateRentRequest:
       type: object
@@ -1240,6 +1424,48 @@ components:
           format: uint16
           example: 1000
           description: Maximum effective radius of the infra type in meters
+
+    CreateBusinessTypeRequest:
+      type: object
+      required:
+        - infra_type_id
+      properties:
+        infra_type_id:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
+          description: >-
+            Unique reference to the infra type whose objects are considered
+            competitors for this business type
+
+    UpdateBusinessTypeRequest:
+      type: object
+      required:
+        - infra_type_id
+      properties:
+        infra_type_id:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 2
+          description: >-
+            New unique reference to the infra type whose objects are considered
+            competitors for this business type
+
+    BusinessTypeResponse:
+      type: object
+      required:
+        - id
+        - infra_type
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+          description: Internal business type ID
+        infra_type:
+          $ref: '#/components/schemas/InfraTypeResponse'
 
     ErrorResponse:
       type: object

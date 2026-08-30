@@ -1,111 +1,151 @@
-# GeoLogicApi
+# GeoLogic API
 
-Backend-сервис для хранения пользователей, локаций, событий, аренды недвижимости и вычисления рейтинга местности при выборе места для открытия бизнеса.
+Backend-сервис для хранения геоданных о коммерческой аренде, городской инфраструктуре и событиях. Проект готовит данные для оценки привлекательности локаций при открытии бизнеса.
 
-## Кратко о проекте
+## Возможности
 
-GeoLogicApi предоставляет REST API для:
-- управления пользователями и их связями с локациями;
-- хранения объектов коммерческой аренды с геопривязкой;
-- хранения инфраструктуры города и ключевых точек притяжения;
-- регистрации событий, привязанных к точкам на карте;
-- расчёта и выдачи рейтинга местности для оценки привлекательности участка под бизнес.
+Сейчас реализованы:
 
-Архитектура проекта строго ориентирована на принципы Clean Architecture / DDD: `handler` (транспорт) → `service` (бизнес-логика) → `repository` (данные) с управлением зависимостями через DI.
+- CRUD пользователей;
+- CRUD объектов коммерческой аренды и поиск доступных объектов в заданном радиусе;
+- CRUD событий и поиск ближайших событий;
+- CRUD объектов инфраструктуры и поиск ближайших объектов;
+- CRUD типов инфраструктуры с весом и радиусом влияния;
+- CRUD отслеживаемых пользователями локаций и получение локаций пользователя;
+- геопространственные запросы PostgreSQL/PostGIS;
+- централизованная обработка ошибок, валидация запросов и структурированное логирование;
+- OpenAPI-контракт в `docs/openapi.yaml` и E2E-тесты через Testcontainers.
 
-## Стек технологий
+Проект разделён на слои `handler` → `service` → `repository`. Зависимости собираются в DI-контейнере, а схема базы данных обновляется при запуске через GORM `AutoMigrate`.
 
-- Go (1.26.1)
-- Gin (HTTP-роутинг и валидация)
-- GORM (ORM)
-- PostgreSQL + PostGIS (хранение и индексация геоданных)
-- log/slog (структурированное логирование)
-- github.com/caarlos0/env + godotenv (конфигурация)
-- testcontainers-go (e2e-тестирование в изолированных контейнерах)
-- stretchr/testify (пакеты assert и require для тестирования)
+## Стек
 
-## Схема данных (план)
+- Go 1.26;
+- Gin;
+- GORM;
+- PostgreSQL 18 + PostGIS 3.6;
+- `log/slog`;
+- `caarlos0/env` и `godotenv`;
+- Testcontainers Go и `testify`.
 
-### Users
-- `id` — PK (uint64)
-- `tg_id` — int
-- `created_at` — datetime
-- `updated_at` — datetime
+## Модель данных
 
-### Rents (Коммерческая аренда)
-- `id` — PK (uint64)
-- `location` — geometry(Point, 4326) [not null]
-- `address` — string (varchar 255)
-- `info` — string (varchar 255, nullable)
-- `created_at` — datetime
-- `updated_at` — datetime
+### Реализованные сущности
 
-### Events
-- `id` — PK
-- `location` — geometry(Point, 4326)
-- `date` — datetime
-- `info` — string
-- `created_at` — datetime
-- `updated_at` — datetime
+- `User`: Telegram ID пользователя.
+- `Rent`: координаты, адрес и дополнительная информация об объекте аренды.
+- `Event`: координаты, дата и дополнительная информация о событии.
+- `InfraObject`: координаты, адрес, название и ссылка на `InfraType`.
+- `InfraType`: уникальный `slug`, отображаемое имя, вес для рейтинга и максимальный радиус влияния.
+- `TrackedLocation`: ссылка на пользователя и отслеживаемая географическая точка.
 
-### TrakedLocations
-- `id` — PK
-- `user_id` — int (FK → Users.id)
-- `location` — geometry(Point, 4326)
-- `created_at` — datetime
-- `updated_at` — datetime
+Все сущности имеют внутренний числовой ID и служебные даты создания и изменения. Координаты хранятся как `geometry(Point, 4326)`.
 
-### Infra
-- `id` — PK
-- `location` — geometry(Point, 4326)
-- `address` — string
-- `type` — string
-- `info` — string
-- `created_at` — datetime
-- `updated_at` — datetime
+### Запланированный BusinessType
 
-### InfraType
-- `id` — PK
-- `slug` — string, unique identifier for code usage (e.g. `subway`, `cafe`)
-- `name` — string, display name (e.g. `Метро`)
-- `weight` — float, base score coefficient
-- `max_radius` — uint16, maximum influence radius in meters
-- `created_at` — datetime
-- `updated_at` — datetime
+OpenAPI описывает будущую сущность `BusinessType`. В первой версии она содержит собственный ID и уникальную ссылку на один `InfraType`. Объекты инфраструктуры этого типа будут считаться конкурентами при расчёте рейтинга. При удалении связанного `InfraType` предусматривается каскадное удаление `BusinessType`.
 
-## Что уже реализовано
+Контракт включает:
 
-- **Базовая структура**: Архитектура проекта с разделением слоёв (`internal/api`, `internal/handler`, `internal/service`, `internal/repository`, `internal/database`).
-- **Пользователи**: Полный CRUD для пользователей (handler/service/repository) с автоматической миграцией.
-- **Коммерческая аренда (Rents)**: 
-  - Разработан безопасный PATCH-апдейт на указателях для частичного обновления данных.
-  - Реализован геопространственный поиск доступных объектов в радиусе с помощью функций PostGIS (`ST_DWithin` с кастингом в `geography`).
-  - Реализована строгая валидация входящих Query-параметров (координаты, ограничения радиуса) на уровне Gin Binding.
-- **Инфраструктура**: Подключение к PostgreSQL + PostGIS, централизованная модель ошибок (`internal/errors` → `AppError`) и middleware для ответов клиенту.
-- **Логирование**: Логирование запросов и SQL-операций через встроенный `internal/logger` (`slog`).
-- **Тестирование**: Мощное покрытие E2E-тестами (`testcontainers-go`). Написаны табличные тесты (Table-Driven Tests) для верификации успешных PATCH-обновлений, гео-поиска `Available`, а также негативные тесты на валидацию «грязных» данных и сломанного JSON.
+- `POST /api/business-types`;
+- `GET /api/business-types`;
+- `GET /api/business-types/{id}`;
+- `PATCH /api/business-types/{id}`;
+- `DELETE /api/business-types/{id}`.
 
-## Что планируется сделать
+Эти маршруты пока не реализованы в приложении.
 
-- Добавить модели и репозитории для оставшихся сущностей: `Events`, `Infra`, `Users_locations`.
-- Создать пространственные индексы `GIST` для высокопроизводительных гео-запросов.
-- Реализовать алгоритм расчёта рейтинга местности (агрегация близости инфраструктуры, событий, плотности и т.п.).
-- Добавить аутентификацию/авторизацию (если потребуется).
-- Расширить unit-тестирование бизнес-логики сервисов.
-- Подготовить API документацию (OpenAPI/Swagger).
-- Расширить документацию по новым сущностям: `Events`, `Infra`, `Users_locations`, `InfraType`.
+## API
 
-## Конфигурация и запуск
+Все runtime-маршруты имеют префикс `/api`.
 
-1. Скопировать шаблон окружения:
-```bash
-cp .env.template .env
-```
+| Ресурс | Реализованные операции |
+| --- | --- |
+| `/users` | создание, получение по ID, изменение, удаление |
+| `/rents` | создание, получение по ID, изменение, удаление |
+| `/rents/available` | поиск аренды по `lat`, `long` и опциональному `radius` |
+| `/events` | CRUD |
+| `/events/near` | поиск по `lat`, `long` и опциональному `radius` |
+| `/infra` | CRUD |
+| `/infra/near` | поиск по `lat` и `long` с учётом радиуса типа инфраструктуры |
+| `/infra/types` | CRUD типов инфраструктуры |
+| `/tracked-locations` | CRUD и получение списка по ID пользователя |
 
-2. Настроить переменные в `.env` (DB, SERVER_PORT, LOG_LEVEL и т.п.).
+Полное описание запросов и ответов находится в [OpenAPI-спецификации](docs/openapi.yaml).
 
-3. Запуск локально базы данных и приложения через `task`:
+### Запланированный рейтинг
+
+Контракт `GET /api/rents/available/rating` возвращает доступные объекты аренды с полем `rating`. Он принимает обязательные `lat`, `long`, `business_type_id` и опциональный `radius`.
+
+Эндпоинт и алгоритм рейтинга пока не реализованы. В будущем расчёт должен учитывать близость инфраструктуры, события и конкурентов, определяемых через связь `BusinessType → InfraType`.
+
+## Конфигурация
+
+Приложение читает `.env`, если файл существует, и поддерживает следующие переменные:
+
+| Переменная | Значение по умолчанию |
+| --- | --- |
+| `DB_HOST` | `localhost` |
+| `DB_PORT` | `5432` |
+| `DB_USER` | `postgres` |
+| `DB_PASSWORD` | `postgres` |
+| `DB_NAME` | `postgres` |
+| `DB_SSL_MODE` | `disable` |
+| `MAX_IDLE_CONNS` | `10` |
+| `MAX_OPEN_CONNS` | `100` |
+| `SERVER_PORT` | `8080` |
+| `GIN_MODE` | `debug` |
+| `READ_TIMEOUT` | `5s` |
+| `WRITE_TIMEOUT` | `10s` |
+| `IDLE_TIMEOUT` | `60s` |
+| `LOG_LEVEL` | `info` |
+| `LOG_FORMAT` | `text` |
+| `LOG_ADD_SOURCE` | `false` |
+
+Для Docker Compose необходимо создать `.env` как минимум с параметрами `DB_USER`, `DB_PASSWORD`, `DB_NAME` и `SERVER_PORT`.
+
+## Запуск
+
+Требуются Go, Docker с Compose и [Task](https://taskfile.dev/).
+
+Запуск базы в Docker и приложения локально:
+
 ```bash
 task db:up
 task run
 ```
+
+Запуск API и базы полностью в контейнерах:
+
+```bash
+task app:up
+```
+
+Другие команды:
+
+```bash
+task logs       # логи контейнеров
+task build      # сборка бинарника в bin/geo_logic_api
+task db:down    # остановка базы и удаление Docker volume
+```
+
+## Проверки
+
+```bash
+task tests       # обычные Go-тесты
+task e2e_tests   # E2E-тесты с временным контейнером PostGIS
+task lint        # golangci-lint
+task format      # gofumpt и сортировка импортов
+task ci          # полный набор проверок проекта
+```
+
+Для E2E-тестов нужен работающий Docker daemon.
+
+## Дальнейшее развитие
+
+- реализовать `BusinessType` и его CRUD-контракт;
+- реализовать `/rents/available/rating` и алгоритм расчёта рейтинга;
+- учитывать инфраструктуру, события, плотность объектов и конкурентов;
+- добавить пространственные индексы GIST;
+- расширить unit-тесты бизнес-логики;
+- добавить аутентификацию и авторизацию при необходимости.
