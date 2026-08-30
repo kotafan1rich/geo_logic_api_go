@@ -556,28 +556,26 @@ paths:
 
   /tracked-locations/{id}:
     get:
-      summary: Get all locations of a user
-      operationId: getTrackedLocations
+      summary: Get a tracked location by ID
+      operationId: getTrackedLocationByID
       tags:
         - Tracked Locations
       parameters:
         - name: id
           in: path
           required: true
-          description: Internal ID
+          description: Internal user-location relation ID
           schema:
             type: integer
             format: int64
             example: 1
       responses:
         '200':
-          description: Successful response with user locations
+          description: Successful response with the tracked location
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TrackedLocationResponse'
+                $ref: '#/components/schemas/TrackedLocationResponse'
         '404':
           description: Location not found
         '400':
@@ -590,14 +588,6 @@ paths:
         - Tracked Locations
       parameters:
         - name: id
-          in: path
-          required: true
-          description: Internal ID
-          schema:
-            type: integer
-            format: int64
-            example: 1
-        - name: locationID
           in: path
           required: true
           description: Internal user-location relation ID
@@ -631,14 +621,6 @@ paths:
         - name: id
           in: path
           required: true
-          description: Internal user ID
-          schema:
-            type: integer
-            format: int64
-            example: 1
-        - name: locationID
-          in: path
-          required: true
           description: Internal user-location relation ID
           schema:
             type: integer
@@ -649,6 +631,33 @@ paths:
           description: User location relation deleted successfully (no response body)
         '404':
           description: User location relation not found
+        '400':
+          description: Validation error in the request parameters
+
+  /tracked-locations/user/{id}:
+    get:
+      summary: Get all tracked locations of a user
+      operationId: getTrackedLocationsByUserID
+      tags:
+        - Tracked Locations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Internal user ID
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        '200':
+          description: Successful response with user locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrackedLocationResponse'
         '400':
           description: Validation error in the request parameters
 

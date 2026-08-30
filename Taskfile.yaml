@@ -96,7 +96,7 @@ tasks:
   e2e_tests:
     desc: "Запускает E2E тесты API с автоматическим контролем контейнера базы"
     cmds:
-      - go test ./internal/tests/e2e/... -v -run TestAPI -tags=e2e
+      - go test ./internal/tests/e2e/... -v -tags=e2e
   
   ci:
     desc: "Запуск всех проверок CI (форматирование, линтер, тесты)"

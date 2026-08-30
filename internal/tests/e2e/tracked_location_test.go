@@ -39,8 +39,12 @@ func addTrackedLocation(userID uint64, lat, long float64) (*dto.TrackedLocationR
 	return &location, nil
 }
 
-func httpGetTrackedLocations(userID string) (*http.Response, error) {
-	return httpClient.Get(fmt.Sprintf("%s/%s", trackedLocationsAPI(), userID))
+func httpGetTrackedLocation(id string) (*http.Response, error) {
+	return httpClient.Get(fmt.Sprintf("%s/%s", trackedLocationsAPI(), id))
+}
+
+func httpGetTrackedLocationsByUserID(userID string) (*http.Response, error) {
+	return httpClient.Get(fmt.Sprintf("%s/user/%s", trackedLocationsAPI(), userID))
 }
 
 func httpUpdateTrackedLocation(id uint64, payload any) (*http.Response, error) {
@@ -133,7 +137,7 @@ func TestE2E_TrackedLocationGetByUserID(t *testing.T) {
 	created, err := addTrackedLocation(7, validLat, validLong)
 	require.NoError(t, err)
 
-	resp, err := httpGetTrackedLocations("7")
+	resp, err := httpGetTrackedLocationsByUserID("7")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -147,7 +151,7 @@ func TestE2E_TrackedLocationGetByUserID(t *testing.T) {
 func TestE2E_TrackedLocationGetByUserID_Empty(t *testing.T) {
 	clearTables(t)
 
-	resp, err := httpGetTrackedLocations("1")
+	resp, err := httpGetTrackedLocationsByUserID("1")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -162,7 +166,45 @@ func TestE2E_TrackedLocationGetByUserID_Validation(t *testing.T) {
 
 	for _, id := range []string{"0", "-1", "not-a-number"} {
 		t.Run(id, func(t *testing.T) {
-			resp, err := httpGetTrackedLocations(id)
+			resp, err := httpGetTrackedLocationsByUserID(id)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	}
+}
+
+func TestE2E_TrackedLocationGetByID(t *testing.T) {
+	clearTables(t)
+
+	created, err := addTrackedLocation(7, validLat, validLong)
+	require.NoError(t, err)
+
+	resp, err := httpGetTrackedLocation(fmt.Sprint(created.ID))
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var location dto.TrackedLocationResponse
+	require.NoError(t, parseBody(resp.Body, &location))
+	assert.Equal(t, *created, location)
+}
+
+func TestE2E_TrackedLocationGetByID_NotFound(t *testing.T) {
+	clearTables(t)
+
+	resp, err := httpGetTrackedLocation("1")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestE2E_TrackedLocationGetByID_Validation(t *testing.T) {
+	clearTables(t)
+
+	for _, id := range []string{"0", "-1", "not-a-number"} {
+		t.Run(id, func(t *testing.T) {
+			resp, err := httpGetTrackedLocation(id)
 			require.NoError(t, err)
 			defer resp.Body.Close()
 			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)

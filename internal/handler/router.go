@@ -42,6 +42,7 @@ type InfraHandler interface {
 
 type TrackedLocationHandler interface {
 	Create(c *gin.Context)
+	GetByID(c *gin.Context)
 	GetByUserID(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
@@ -94,7 +95,8 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 	trackedLocation := router.Group("/tracked-locations")
 	{
 		trackedLocation.POST("/", trackedLocationHandler.Create)
-		trackedLocation.GET("/:id", trackedLocationHandler.GetByUserID)
+		trackedLocation.GET("/:id", trackedLocationHandler.GetByID)
+		trackedLocation.GET("/user/:id", trackedLocationHandler.GetByUserID)
 		trackedLocation.PATCH("/:id", trackedLocationHandler.Update)
 		trackedLocation.DELETE("/:id", trackedLocationHandler.Delete)
 	}
