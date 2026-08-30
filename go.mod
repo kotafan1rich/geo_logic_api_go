@@ -1,6 +1,6 @@
 module github.com/kotafan1rich/geo_logic_api_go
 
-go 1.26.1
+go 1.27.0
 
 require (
 	github.com/caarlos0/env/v9 v9.0.0
