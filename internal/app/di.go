@@ -9,32 +9,37 @@ import (
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/event"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/infra"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/rent"
+	trackedlocationhandler "github.com/kotafan1rich/geo_logic_api_go/internal/handler/tracked_location"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/handler/user"
 	"github.com/kotafan1rich/geo_logic_api_go/internal/logger"
 	eventrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/event"
 	infrarepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/infra"
 	rentrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent"
+	trackedlocationrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/tracked_location"
 	userrepo "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user"
 	eventservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/event"
 	infraservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/infra"
 	rentservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/rent"
+	trackedlocationservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/tracked_location"
 	userservice "github.com/kotafan1rich/geo_logic_api_go/internal/service/user"
 )
 
 type diContainer struct {
 	db database.DB
 
-	userRepo      userrepo.UserRepository
-	rentRepo      rentrepo.RentRepository
-	eventRepo     eventrepo.EventRepository
-	infraTypeRepo infrarepo.InfraTypeRepository
-	infraRepo     infrarepo.InfraRepository
+	userRepo            userrepo.UserRepository
+	rentRepo            rentrepo.RentRepository
+	eventRepo           eventrepo.EventRepository
+	infraTypeRepo       infrarepo.InfraTypeRepository
+	infraRepo           infrarepo.InfraRepository
+	trackedLocationRepo trackedlocationrepo.TrackedLocationRepository
 
-	userService      userservice.UserService
-	rentService      rentservice.RentService
-	eventService     eventservice.EventService
-	infraTypeService infraservice.InfraTypeService
-	infraService     infraservice.InfraService
+	userService            userservice.UserService
+	rentService            rentservice.RentService
+	eventService           eventservice.EventService
+	infraTypeService       infraservice.InfraTypeService
+	infraService           infraservice.InfraService
+	trackedLocationService trackedlocationservice.TrackedLocationService
 
 	handler api.HttpHandler
 
@@ -99,6 +104,14 @@ func (d *diContainer) InfraRepo() infrarepo.InfraRepository {
 	return d.infraRepo
 }
 
+func (d *diContainer) TrackedLocationRepo() trackedlocationrepo.TrackedLocationRepository {
+	if d.trackedLocationRepo == nil {
+		d.trackedLocationRepo = trackedlocationrepo.NewRepository(d.DB())
+	}
+
+	return d.trackedLocationRepo
+}
+
 func (d *diContainer) UserService() userservice.UserService {
 	if d.userService == nil {
 		d.userService = userservice.NewUserService(*d.Logger(), d.UserRepo())
@@ -135,6 +148,14 @@ func (d *diContainer) InfraService() infraservice.InfraService {
 	return d.infraService
 }
 
+func (d *diContainer) TrackedLocationService() trackedlocationservice.TrackedLocationService {
+	if d.trackedLocationService == nil {
+		d.trackedLocationService = trackedlocationservice.NewTrackedLocationService(*d.Logger(), d.TrackedLocationRepo())
+	}
+
+	return d.trackedLocationService
+}
+
 func (d *diContainer) Handler() api.HttpHandler {
 	if d.handler == nil {
 		userHandler := user.NewHandler(d.UserService())
@@ -142,7 +163,8 @@ func (d *diContainer) Handler() api.HttpHandler {
 		eventHandler := event.NewHandler(d.EventService())
 		infraTypeHandler := infra.NewTypeHandler(d.InfraTypeService())
 		infraHandler := infra.NewInfraHandler(d.InfraService())
-		d.handler = api.NewHttpHandler(*d.Logger(), userHandler, rentHandler, eventHandler, infraTypeHandler, infraHandler)
+		trackedLocationHandler := trackedlocationhandler.NewHandler(d.TrackedLocationService())
+		d.handler = api.NewHttpHandler(*d.Logger(), userHandler, rentHandler, eventHandler, infraTypeHandler, infraHandler, trackedLocationHandler)
 	}
 
 	return d.handler

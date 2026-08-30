@@ -12,22 +12,24 @@ type HttpHandler interface {
 }
 
 type httpHandler struct {
-	log              logger.Logger
-	userHandler      handler.UserHandler
-	rentHandler      handler.RentHandler
-	eventHandler     handler.EventHandler
-	infraTypeHandler handler.InfraTypeHandler
-	infraHandler     handler.InfraHandler
+	log                    logger.Logger
+	userHandler            handler.UserHandler
+	rentHandler            handler.RentHandler
+	eventHandler           handler.EventHandler
+	infraTypeHandler       handler.InfraTypeHandler
+	infraHandler           handler.InfraHandler
+	trackedLocationHandler handler.TrackedLocationHandler
 }
 
-func NewHttpHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler, eventHandler handler.EventHandler, infraTypeHandler handler.InfraTypeHandler, infraHandler handler.InfraHandler) HttpHandler {
+func NewHttpHandler(log logger.Logger, userHandler handler.UserHandler, rentHandler handler.RentHandler, eventHandler handler.EventHandler, infraTypeHandler handler.InfraTypeHandler, infraHandler handler.InfraHandler, trackedLocationHandler handler.TrackedLocationHandler) HttpHandler {
 	return &httpHandler{
-		log:              log,
-		userHandler:      userHandler,
-		rentHandler:      rentHandler,
-		eventHandler:     eventHandler,
-		infraTypeHandler: infraTypeHandler,
-		infraHandler:     infraHandler,
+		log:                    log,
+		userHandler:            userHandler,
+		rentHandler:            rentHandler,
+		eventHandler:           eventHandler,
+		infraTypeHandler:       infraTypeHandler,
+		infraHandler:           infraHandler,
+		trackedLocationHandler: trackedLocationHandler,
 	}
 }
 
@@ -42,7 +44,7 @@ func (h *httpHandler) Routes() *gin.Engine {
 
 	api := router.Group("/api")
 
-	handler.RegisterRoutes(api, h.userHandler, h.rentHandler, h.eventHandler, h.infraTypeHandler, h.infraHandler)
+	handler.RegisterRoutes(api, h.userHandler, h.rentHandler, h.eventHandler, h.infraTypeHandler, h.infraHandler, h.trackedLocationHandler)
 
 	return router
 }

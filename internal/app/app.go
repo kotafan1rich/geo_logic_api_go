@@ -16,6 +16,7 @@ import (
 	eventmodel "github.com/kotafan1rich/geo_logic_api_go/internal/repository/event/dbmodel"
 	inframodel "github.com/kotafan1rich/geo_logic_api_go/internal/repository/infra/dbmodel"
 	rentmodel "github.com/kotafan1rich/geo_logic_api_go/internal/repository/rent/dbmodel"
+	trackedlocationmodel "github.com/kotafan1rich/geo_logic_api_go/internal/repository/tracked_location/dbmodel"
 	usermodel "github.com/kotafan1rich/geo_logic_api_go/internal/repository/user/dbmodel"
 )
 
@@ -50,6 +51,7 @@ func (a *App) migrateDB() {
 		&eventmodel.Event{},
 		&inframodel.InfraObject{},
 		&inframodel.InfraType{},
+		&trackedlocationmodel.TrackedLocation{},
 	); err != nil {
 		slog.Error("Failed to run migrations")
 		os.Exit(1)

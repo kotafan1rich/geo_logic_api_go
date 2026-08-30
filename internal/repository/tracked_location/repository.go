@@ -14,7 +14,7 @@ import (
 type TrackedLocationRepository interface {
 	Create(ctx context.Context, location *model.TrackedLocation) (*model.TrackedLocation, error)
 	GetByID(ctx context.Context, id uint64) (*model.TrackedLocation, error)
-	GetByUserID(ctx context.Context, user_id uint64) ([]model.TrackedLocation, error)
+	GetByUserID(ctx context.Context, userID uint64) ([]model.TrackedLocation, error)
 	Update(ctx context.Context, location *model.TrackedLocation) (*model.TrackedLocation, error)
 	Delete(ctx context.Context, id uint64) error
 }
@@ -52,11 +52,11 @@ func (r *locationRepository) GetByID(ctx context.Context, id uint64) (*model.Tra
 	return dbmodel.ToDomain(&location), nil
 }
 
-func (r *locationRepository) GetByUserID(ctx context.Context, user_id uint64) ([]model.TrackedLocation, error) {
+func (r *locationRepository) GetByUserID(ctx context.Context, userID uint64) ([]model.TrackedLocation, error) {
 	var locations []dbmodel.TrackedLocation
 	err := r.db.GORM().WithContext(ctx).Model(&dbmodel.TrackedLocation{}).Where(
 		"user_id = ?",
-		user_id,
+		userID,
 	).Find(&locations).Error
 	if err != nil {
 		return nil, err

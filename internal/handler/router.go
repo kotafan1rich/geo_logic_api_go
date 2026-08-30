@@ -40,7 +40,14 @@ type InfraHandler interface {
 	Near(c *gin.Context)
 }
 
-func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler, typeHandler InfraTypeHandler, infraHandler InfraHandler) {
+type TrackedLocationHandler interface {
+	Create(c *gin.Context)
+	GetByUserID(c *gin.Context)
+	Update(c *gin.Context)
+	Delete(c *gin.Context)
+}
+
+func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandler RentHandler, eventHandler EventHandler, typeHandler InfraTypeHandler, infraHandler InfraHandler, trackedLocationHandler TrackedLocationHandler) {
 	user := router.Group("/users")
 	{
 		user.POST("/", userHandler.Create)
@@ -82,5 +89,13 @@ func RegisterRoutes(router *gin.RouterGroup, userHandler UserHandler, rentHandle
 			infraType.PATCH("/:id", typeHandler.Update)
 			infraType.DELETE("/:id", typeHandler.Delete)
 		}
+	}
+
+	trackedLocation := router.Group("/tracked-locations")
+	{
+		trackedLocation.POST("/", trackedLocationHandler.Create)
+		trackedLocation.GET("/:id", trackedLocationHandler.GetByUserID)
+		trackedLocation.PATCH("/:id", trackedLocationHandler.Update)
+		trackedLocation.DELETE("/:id", trackedLocationHandler.Delete)
 	}
 }
